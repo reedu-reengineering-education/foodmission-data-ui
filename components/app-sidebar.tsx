@@ -2,16 +2,21 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
+  BarChart3,
+  Leaf,
+  TrendingUp,
+  Users,
+  MapPin,
+  Wheat,
+  Truck,
+  Apple,
+  Trash2,
+  LayoutDashboard,
   Settings2,
-  SquareTerminal,
+  FileText,
+  GalleryVerticalEnd,
+  AudioWaveform,
+  Command,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -29,7 +34,7 @@ import { authClient } from "@/lib/auth-client"
 import { set } from "better-auth"
 import { useEffect, useState } from "react"
 
-// This is sample data.
+// FoodMission Data Dashboard Navigation
 const data = {
   user: {
     name: "shadcn",
@@ -38,123 +43,153 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "FoodMission EU",
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      plan: "Research",
     },
     {
-      name: "Acme Corp.",
+      name: "Regional Partners",
       logo: AudioWaveform,
-      plan: "Startup",
+      plan: "Collaboration",
     },
     {
-      name: "Evil Corp.",
+      name: "Analytics Team",
       logo: Command,
-      plan: "Free",
+      plan: "Data Science",
     },
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "Overview",
+      url: "/",
+      icon: LayoutDashboard,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Dashboard",
+          url: "/",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Key Metrics",
+          url: "/metrics",
         },
         {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "Reports",
+          url: "/reports",
         },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
+      title: "Regional Analysis",
+      url: "/regional",
+      icon: MapPin,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Geographic Overview",
+          url: "/regional",
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "Country Comparison",
+          url: "/regional/comparison",
         },
         {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Urban vs Rural",
+          url: "/regional/urban-rural",
         },
       ],
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
+      title: "Supply Chain",
+      url: "/supply-chain",
+      icon: Truck,
       items: [
         {
-          title: "General",
-          url: "#",
+          title: "Flow Analysis",
+          url: "/supply-chain",
         },
         {
-          title: "Team",
-          url: "#",
+          title: "Distribution",
+          url: "/supply-chain/distribution",
         },
         {
-          title: "Billing",
-          url: "#",
+          title: "Efficiency Metrics",
+          url: "/supply-chain/efficiency",
+        },
+      ],
+    },
+    {
+      title: "Sustainability",
+      url: "/sustainability",
+      icon: Leaf,
+      items: [
+        {
+          title: "Carbon Footprint",
+          url: "/sustainability",
         },
         {
-          title: "Limits",
-          url: "#",
+          title: "Resource Usage",
+          url: "/sustainability/resources",
+        },
+        {
+          title: "Environmental Impact",
+          url: "/sustainability/impact",
+        },
+      ],
+    },
+    {
+      title: "Nutrition & Health",
+      url: "/nutrition",
+      icon: Apple,
+      items: [
+        {
+          title: "Dietary Patterns",
+          url: "/nutrition",
+        },
+        {
+          title: "Nutritional Quality",
+          url: "/nutrition/quality",
+        },
+        {
+          title: "Health Indicators",
+          url: "/nutrition/health",
+        },
+      ],
+    },
+    {
+      title: "Food Waste",
+      url: "/food-waste",
+      icon: Trash2,
+      items: [
+        {
+          title: "Waste Analysis",
+          url: "/food-waste",
+        },
+        {
+          title: "By Sector",
+          url: "/food-waste/sectors",
+        },
+        {
+          title: "Reduction Trends",
+          url: "/food-waste/trends",
         },
       ],
     },
   ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
+      name: "Production Data",
+      url: "/production",
+      icon: Wheat,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
+      name: "Consumer Behavior",
+      url: "/consumers",
+      icon: Users,
     },
     {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      name: "Market Trends",
+      url: "/trends",
+      icon: TrendingUp,
     },
   ],
 }
