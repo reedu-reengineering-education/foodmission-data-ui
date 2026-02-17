@@ -46,6 +46,21 @@ export function NavMain({
             pathname === item.url ||
             pathname.startsWith(item.url + "/");
 
+          const isCollapsible = item.items;
+
+          if (!isCollapsible) {
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild>
+                  <Link href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          }
+
           return (
             <Collapsible
               key={item.title}

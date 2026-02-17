@@ -37,19 +37,27 @@ import {
   MapMarker,
   MarkerContent,
   MarkerTooltip,
+  useMap,
 } from "@/components/ui/map";
+import { useEffect } from "react";
 
 // Mock data for FoodMission dashboard
-const foodProductionData = [
-  { country: "Norway", production: 5200, size: 11 },
-  { country: "Netherlands", production: 8500, size: 13 },
-  { country: "Germany", production: 12400, size: 15 },
-  { country: "Poland", production: 6800, size: 12 },
-  { country: "Spain", production: 15200, size: 16 },
-  { country: "Italy", production: 14800, size: 16 },
-  { country: "Slovenia", production: 2400, size: 9 },
-  { country: "Greece", production: 7100, size: 12 },
+const countryUserData = [
+  { country: "Norway", users: 520, code: "NOR" },
+  { country: "Netherlands", users: 850, code: "NLD" },
+  { country: "Germany", users: 1240, code: "DEU" },
+  { country: "Poland", users: 680, code: "POL" },
+  { country: "Spain", users: 1520, code: "ESP" },
+  { country: "Italy", users: 1480, code: "ITA" },
+  { country: "Slovenia", users: 240, code: "SVN" },
+  { country: "Greece", users: 710, code: "GRC" },
 ];
+
+const foodProductionData = countryUserData.map(d => ({
+  country: d.country,
+  production: d.users,
+  size: Math.sqrt(d.users / 10) + 8,
+}));
 
 const mapLocations = [
   {
@@ -128,70 +136,190 @@ const monthlyTrendsData = [
 ];
 
 const nutritionData = [
-  { category: "Fruits", consumption: 85 },
-  { category: "Vegetables", consumption: 78 },
-  { category: "Grains", consumption: 92 },
-  { category: "Proteins", consumption: 88 },
-  { category: "Dairy", consumption: 81 },
+  { category: "Knowledge", consumption: 92 },
+  { category: "Challenges", consumption: 85 },
+  { category: "Missions", consumption: 78 },
+  { category: "Waste Tracking", consumption: 72 },
+  { category: "Social", consumption: 68 },
 ];
+
+// Choropleth layer component
+function CountryChoropleth({ data }: { data: typeof countryUserData }) {
+  const { map, isLoaded } = useMap();
+
+  useEffect(() => {
+    if (!isLoaded || !map) return;
+
+    const sourceId = "countries-choropleth";
+    const layerId = "countries-fill";
+
+    // Get theme - check if dark mode
+    const isDark = document.documentElement.classList.contains("dark");
+    
+    // Use teal/cyan colors to match theme
+    const maxUsers = Math.max(...data.map(d => d.users));
+    const getColor = (users: number) => {
+      const intensity = (users / maxUsers);
+      if (isDark) {
+        // Dark theme: use lighter teal/cyan with more saturation
+        const lightness = 45 + (intensity * 25); // 45% to 70%
+        return `hsl(180, 75%, ${lightness}%)`;
+      } else {
+        // Light theme: use darker teal
+        const lightness = 65 - (intensity * 35); // 65% to 30%
+        return `hsl(180, 65%, ${lightness}%)`;
+      }
+    };
+
+    // Build color expression that checks ADM0_A3 and NAME fields
+    const colorExpression: any = [
+      "case",
+      ...data.flatMap(d => [
+        ["==", ["get", "ADM0_A3"], d.code],
+        getColor(d.users),
+        ["==", ["get", "NAME"], d.country],
+        getColor(d.users),
+      ]),
+      isDark ? "rgba(100, 100, 100, 0.1)" : "rgba(230, 230, 230, 0.15)" // default color for non-target countries
+    ];
+
+    // Add source if it doesn't exist
+    if (!map.getSource(sourceId)) {
+      map.addSource(sourceId, {
+        type: "vector",
+        url: "https://demotiles.maplibre.org/tiles/tiles.json"
+      });
+    }
+
+    // Add fill layer
+    if (!map.getLayer(layerId)) {
+      map.addLayer({
+        id: layerId,
+        type: "fill",
+        source: sourceId,
+        "source-layer": "countries",
+        paint: {
+          "fill-color": colorExpression,
+          "fill-opacity": 0.8,
+        },
+      });
+    }
+
+    // Add hover effect
+    let hoveredCountryId: string | number | null = null;
+
+    const handleMouseMove = (e: any) => {
+      if (e.features && e.features.length > 0) {
+        if (hoveredCountryId !== null) {
+          map.setFeatureState(
+            { source: sourceId, sourceLayer: "countries", id: hoveredCountryId },
+            { hover: false }
+          );
+        }
+        hoveredCountryId = e.features[0].id;
+        map.setFeatureState(
+          { source: sourceId, sourceLayer: "countries", id: hoveredCountryId },
+          { hover: true }
+        );
+        map.getCanvas().style.cursor = "pointer";
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (hoveredCountryId !== null) {
+        map.setFeatureState(
+          { source: sourceId, sourceLayer: "countries", id: hoveredCountryId },
+          { hover: false }
+        );
+      }
+      hoveredCountryId = null;
+      map.getCanvas().style.cursor = "";
+    };
+
+    map.on("mousemove", layerId, handleMouseMove);
+    map.on("mouseleave", layerId, handleMouseLeave);
+
+    return () => {
+      map.off("mousemove", layerId, handleMouseMove);
+      map.off("mouseleave", layerId, handleMouseLeave);
+      
+      try {
+        if (map.getLayer(layerId)) map.removeLayer(layerId);
+        if (map.getSource(sourceId)) map.removeSource(sourceId);
+      } catch {
+        // ignore
+      }
+    };
+  }, [isLoaded, map, data]);
+
+  return null;
+}
 
 export function DashboardContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">FoodMission Overview</h2>
+          <p className="text-muted-foreground">
+            European food sustainability platform - User engagement and geographic distribution
+          </p>
+        </div>
+      </div>
+
       {/* Key Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Total Production</CardDescription>
-            <Apple className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">72,400 MT</div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUpIcon className="h-3 w-3 text-green-500" />
-              <span className="text-green-500">+12.3%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Active Regions</CardDescription>
+            <CardDescription>Active Users</CardDescription>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">28 Regions</div>
+            <div className="text-2xl font-bold">2,847</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <TrendingUpIcon className="h-3 w-3 text-green-500" />
-              <span className="text-green-500">+4</span> new this quarter
+              <span className="text-green-500">+18.2%</span> from last month
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Sustainability Score</CardDescription>
+            <CardDescription>Countries</CardDescription>
+            <Apple className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">8 Countries</div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="text-muted-foreground">Across Europe</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardDescription>Avg. Module Usage</CardDescription>
             <Leaf className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">82/100</div>
+            <div className="text-2xl font-bold">3.2 modules</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <TrendingUpIcon className="h-3 w-3 text-green-500" />
-              <span className="text-green-500">+8 points</span> improvement
+              <span className="text-green-500">+0.4</span> per user
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Food Waste Reduction</CardDescription>
+            <CardDescription>Weekly Engagement</CardDescription>
             <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-19.8%</div>
+            <div className="text-2xl font-bold">68%</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingDownIcon className="h-3 w-3 text-green-500" />
-              <span className="text-green-500">Good</span> progress on target
+              <TrendingUpIcon className="h-3 w-3 text-green-500" />
+              <span className="text-green-500">+5.2%</span> retention rate
             </p>
           </CardContent>
         </Card>
@@ -201,59 +329,22 @@ export function DashboardContent() {
       <div className="grid gap-4 md:grid-cols-7">
         {/* Geographic Map */}
         <Card className="md:col-span-4 p-0 overflow-hidden">
-          <Map center={[8, 51]} zoom={2.5} projection={{ type: "globe" }}>
-            {mapLocations.map((loc) => (
-              <MapMarker key={loc.city} longitude={loc.lng} latitude={loc.lat}>
-                <MarkerContent>
-                  <div className="relative flex items-center justify-center">
-                    <div
-                      className="absolute rounded-full bg-primary/20"
-                      style={{
-                        width: loc.size * 2.5,
-                        height: loc.size * 2.5,
-                      }}
-                    />
-                    <div
-                      className="absolute rounded-full bg-primary/40 animate-ping"
-                      style={{
-                        width: loc.size * 1.5,
-                        height: loc.size * 1.5,
-                        animationDuration: "2s",
-                      }}
-                    />
-                    <div
-                      className="relative rounded-full bg-primary shadow-lg shadow-primary/50"
-                      style={{ width: loc.size, height: loc.size }}
-                    />
-                  </div>
-                </MarkerContent>
-                <MarkerTooltip>
-                  <div className="text-center">
-                    <div className="font-medium">{loc.country}</div>
-                    <div className="text-primary font-semibold">
-                      {loc.production.toLocaleString()} MT
-                    </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      monthly production
-                    </div>
-                  </div>
-                </MarkerTooltip>
-              </MapMarker>
-            ))}
+          <Map center={[10, 50]} zoom={3.5} projection={{ type: "mercator" }}>
+            <CountryChoropleth data={countryUserData} />
           </Map>
         </Card>
 
-        {/* Production by Country */}
+        {/* Users by Country */}
         <Card className="md:col-span-3">
           <CardHeader>
-            <CardTitle>Production by Country</CardTitle>
-            <CardDescription>Monthly tonnage (MT)</CardDescription>
+            <CardTitle>Users by Country</CardTitle>
+            <CardDescription>Active participants per country</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
                 production: {
-                  label: "Production",
+                  label: "Users",
                   color: "var(--chart-1)",
                 },
               }}
@@ -283,21 +374,21 @@ export function DashboardContent() {
 
       {/* Trends Section */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Production & Waste Trends */}
+        {/* User Growth & Engagement */}
         <Card>
           <CardHeader>
-            <CardTitle>Production & Waste Trends</CardTitle>
+            <CardTitle>User Growth & Engagement</CardTitle>
             <CardDescription>6-month trend analysis</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
                 production: {
-                  label: "Production (MT)",
+                  label: "New Users",
                   color: "var(--chart-2)",
                 },
                 waste: {
-                  label: "Waste (MT)",
+                  label: "Active Users",
                   color: "var(--chart-3)",
                 },
               }}
@@ -326,23 +417,23 @@ export function DashboardContent() {
             </ChartContainer>
           </CardContent>
           <CardFooter className="text-xs text-muted-foreground">
-            Production increasing while waste is decreasing - positive trend
+            Steady growth in both new user acquisition and active engagement
           </CardFooter>
         </Card>
 
-        {/* Nutrition Consumption */}
+        {/* Module Usage */}
         <Card>
           <CardHeader>
-            <CardTitle>Nutrition Category Consumption</CardTitle>
+            <CardTitle>Module Usage Distribution</CardTitle>
             <CardDescription>
-              Average consumption index by food category
+              Average engagement by platform module
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
                 consumption: {
-                  label: "Consumption Index",
+                  label: "Usage Score",
                   color: "var(--chart-4)",
                 },
               }}
@@ -367,7 +458,7 @@ export function DashboardContent() {
             </ChartContainer>
           </CardContent>
           <CardFooter className="text-xs text-muted-foreground">
-            Balanced consumption across major food categories
+            Knowledge and Challenges modules show highest engagement
           </CardFooter>
         </Card>
       </div>

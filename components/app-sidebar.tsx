@@ -2,21 +2,14 @@
 
 import * as React from "react"
 import {
-  BarChart3,
-  Leaf,
-  TrendingUp,
-  Users,
-  MapPin,
-  Wheat,
-  Truck,
-  Apple,
-  Trash2,
   LayoutDashboard,
-  Settings2,
-  FileText,
   GalleryVerticalEnd,
   AudioWaveform,
   Command,
+  FlaskConical,
+  UserCheck,
+  Bell,
+  Utensils,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -60,136 +53,31 @@ const data = {
   ],
   navMain: [
     {
-      title: "Overview",
+      title: "Dashboard",
       url: "/",
       icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        {
-          title: "Dashboard",
-          url: "/",
-        },
-        {
-          title: "Key Metrics",
-          url: "/metrics",
-        },
-        {
-          title: "Reports",
-          url: "/reports",
-        },
-      ],
-    },
-    {
-      title: "Regional Analysis",
-      url: "/regional",
-      icon: MapPin,
-      items: [
-        {
-          title: "Geographic Overview",
-          url: "/regional",
-        },
-        {
-          title: "Country Comparison",
-          url: "/regional/comparison",
-        },
-        {
-          title: "Urban vs Rural",
-          url: "/regional/urban-rural",
-        },
-      ],
-    },
-    {
-      title: "Supply Chain",
-      url: "/supply-chain",
-      icon: Truck,
-      items: [
-        {
-          title: "Flow Analysis",
-          url: "/supply-chain",
-        },
-        {
-          title: "Distribution",
-          url: "/supply-chain/distribution",
-        },
-        {
-          title: "Efficiency Metrics",
-          url: "/supply-chain/efficiency",
-        },
-      ],
-    },
-    {
-      title: "Sustainability",
-      url: "/sustainability",
-      icon: Leaf,
-      items: [
-        {
-          title: "Carbon Footprint",
-          url: "/sustainability",
-        },
-        {
-          title: "Resource Usage",
-          url: "/sustainability/resources",
-        },
-        {
-          title: "Environmental Impact",
-          url: "/sustainability/impact",
-        },
-      ],
-    },
-    {
-      title: "Nutrition & Health",
-      url: "/nutrition",
-      icon: Apple,
-      items: [
-        {
-          title: "Dietary Patterns",
-          url: "/nutrition",
-        },
-        {
-          title: "Nutritional Quality",
-          url: "/nutrition/quality",
-        },
-        {
-          title: "Health Indicators",
-          url: "/nutrition/health",
-        },
-      ],
-    },
-    {
-      title: "Food Waste",
-      url: "/food-waste",
-      icon: Trash2,
-      items: [
-        {
-          title: "Waste Analysis",
-          url: "/food-waste",
-        },
-        {
-          title: "By Sector",
-          url: "/food-waste/sectors",
-        },
-        {
-          title: "Reduction Trends",
-          url: "/food-waste/trends",
-        },
-      ],
     },
   ],
-  projects: [
+  research: [
     {
-      name: "Production Data",
-      url: "/production",
-      icon: Wheat,
+      name: "Dietary Baseline",
+      url: "/dietary-baseline",
+      icon: Utensils,
     },
     {
-      name: "Consumer Behavior",
-      url: "/consumers",
-      icon: Users,
+      name: "Behavior Change",
+      url: "/behavior-change",
+      icon: FlaskConical,
     },
     {
-      name: "Market Trends",
-      url: "/trends",
-      icon: TrendingUp,
+      name: "Social Influence",
+      url: "/social-influence",
+      icon: UserCheck,
+    },
+    {
+      name: "Waste Tracking",
+      url: "/waste-reminders",
+      icon: Bell,
     },
   ],
 }
@@ -228,7 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={data.research} />
       </SidebarContent>
       <SidebarFooter>
         {
