@@ -41,8 +41,11 @@ export function NavMain({
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          const isOpen = item.isActive || pathname === item.url || pathname.startsWith(item.url + "/");
-          
+          const isOpen =
+            item.isActive ||
+            pathname === item.url ||
+            pathname.startsWith(item.url + "/");
+
           return (
             <Collapsible
               key={item.title}

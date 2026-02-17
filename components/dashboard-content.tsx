@@ -207,14 +207,14 @@ export function DashboardContent() {
                 <MarkerContent>
                   <div className="relative flex items-center justify-center">
                     <div
-                      className="absolute rounded-full bg-blue-500/20"
+                      className="absolute rounded-full bg-primary/20"
                       style={{
                         width: loc.size * 2.5,
                         height: loc.size * 2.5,
                       }}
                     />
                     <div
-                      className="absolute rounded-full bg-blue-500/40 animate-ping"
+                      className="absolute rounded-full bg-primary/40 animate-ping"
                       style={{
                         width: loc.size * 1.5,
                         height: loc.size * 1.5,
@@ -222,7 +222,7 @@ export function DashboardContent() {
                       }}
                     />
                     <div
-                      className="relative rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"
+                      className="relative rounded-full bg-primary shadow-lg shadow-primary/50"
                       style={{ width: loc.size, height: loc.size }}
                     />
                   </div>
@@ -230,7 +230,7 @@ export function DashboardContent() {
                 <MarkerTooltip>
                   <div className="text-center">
                     <div className="font-medium">{loc.country}</div>
-                    <div className="text-blue-500 font-semibold">
+                    <div className="text-primary font-semibold">
                       {loc.production.toLocaleString()} MT
                     </div>
                     <div className="text-[10px] text-muted-foreground">
