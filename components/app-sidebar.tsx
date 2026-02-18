@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   LayoutDashboard,
   GalleryVerticalEnd,
@@ -10,24 +10,24 @@ import {
   UserCheck,
   Bell,
   Utensils,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { authClient } from "@/lib/auth-client"
-import { set } from "better-auth"
-import { useEffect, useState } from "react"
+} from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
+import { set } from "better-auth";
+import { useEffect, useState } from "react";
 
-// FoodMission Data Dashboard Navigation
+// FOODMISSION Data Dashboard Navigation
 const data = {
   user: {
     name: "shadcn",
@@ -36,7 +36,7 @@ const data = {
   },
   teams: [
     {
-      name: "FoodMission EU",
+      name: "FOODMISSION EU",
       logo: GalleryVerticalEnd,
       plan: "Research",
     },
@@ -80,13 +80,13 @@ const data = {
       icon: Bell,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [user, setUser] = useState<{
-    name: string
-    email: string
-    avatar: string
+    name: string;
+    email: string;
+    avatar: string;
   }>();
 
   useEffect(() => {
@@ -104,10 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
     }
     fetchUser();
-  }, [])
-
-
-
+  }, []);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -118,12 +115,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         <NavProjects projects={data.research} />
       </SidebarContent>
-      <SidebarFooter>
-        {
-          user && <NavUser user={user} />
-        }
-      </SidebarFooter>
+      <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

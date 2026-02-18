@@ -9,8 +9,8 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FoodMission Dashboard",
-  description: "EU Horizon FoodMission Data Visualization Platform",
+  title: "FOODMISSION Dashboard",
+  description: "EU Horizon FOODMISSION Data Visualization Platform",
 };
 
 export default function RootLayout({

@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/map";
 import { useEffect } from "react";
 
-// Mock data for FoodMission dashboard
+// Mock data for FOODMISSION dashboard
 const countryUserData = [
   { country: "Norway", users: 520, code: "NOR" },
   { country: "Netherlands", users: 850, code: "NLD" },
@@ -53,7 +53,7 @@ const countryUserData = [
   { country: "Greece", users: 710, code: "GRC" },
 ];
 
-const foodProductionData = countryUserData.map(d => ({
+const foodProductionData = countryUserData.map((d) => ({
   country: d.country,
   production: d.users,
   size: Math.sqrt(d.users / 10) + 8,
@@ -155,39 +155,39 @@ function CountryChoropleth({ data }: { data: typeof countryUserData }) {
 
     // Get theme - check if dark mode
     const isDark = document.documentElement.classList.contains("dark");
-    
+
     // Use teal/cyan colors to match theme
-    const maxUsers = Math.max(...data.map(d => d.users));
+    const maxUsers = Math.max(...data.map((d) => d.users));
     const getColor = (users: number) => {
-      const intensity = (users / maxUsers);
+      const intensity = users / maxUsers;
       if (isDark) {
-        // Dark theme: use lighter teal/cyan with more saturation
-        const lightness = 45 + (intensity * 25); // 45% to 70%
-        return `hsl(180, 75%, ${lightness}%)`;
+        // Dark theme: lighter teal (matching theme hue 192)
+        const lightness = 35 + intensity * 30; // 35% to 65%
+        return `hsl(192, 70%, ${lightness}%)`;
       } else {
-        // Light theme: use darker teal
-        const lightness = 65 - (intensity * 35); // 65% to 30%
-        return `hsl(180, 65%, ${lightness}%)`;
+        // Light theme: darker teal matching primary color
+        const lightness = 50 - intensity * 30; // 50% to 20%
+        return `hsl(192, 60%, ${lightness}%)`;
       }
     };
 
     // Build color expression that checks ADM0_A3 and NAME fields
     const colorExpression: any = [
       "case",
-      ...data.flatMap(d => [
+      ...data.flatMap((d) => [
         ["==", ["get", "ADM0_A3"], d.code],
         getColor(d.users),
         ["==", ["get", "NAME"], d.country],
         getColor(d.users),
       ]),
-      isDark ? "rgba(100, 100, 100, 0.1)" : "rgba(230, 230, 230, 0.15)" // default color for non-target countries
+      isDark ? "rgba(100, 100, 100, 0.1)" : "rgba(230, 230, 230, 0.15)", // default color for non-target countries
     ];
 
     // Add source if it doesn't exist
     if (!map.getSource(sourceId)) {
       map.addSource(sourceId, {
         type: "vector",
-        url: "https://demotiles.maplibre.org/tiles/tiles.json"
+        url: "https://demotiles.maplibre.org/tiles/tiles.json",
       });
     }
 
@@ -210,16 +210,23 @@ function CountryChoropleth({ data }: { data: typeof countryUserData }) {
 
     const handleMouseMove = (e: any) => {
       if (e.features && e.features.length > 0) {
+        const featureId = e.features[0].id;
+        if (featureId == null) return;
+
         if (hoveredCountryId !== null) {
           map.setFeatureState(
-            { source: sourceId, sourceLayer: "countries", id: hoveredCountryId },
-            { hover: false }
+            {
+              source: sourceId,
+              sourceLayer: "countries",
+              id: hoveredCountryId,
+            },
+            { hover: false },
           );
         }
-        hoveredCountryId = e.features[0].id;
+        hoveredCountryId = featureId;
         map.setFeatureState(
-          { source: sourceId, sourceLayer: "countries", id: hoveredCountryId },
-          { hover: true }
+          { source: sourceId, sourceLayer: "countries", id: hoveredCountryId! },
+          { hover: true },
         );
         map.getCanvas().style.cursor = "pointer";
       }
@@ -229,7 +236,7 @@ function CountryChoropleth({ data }: { data: typeof countryUserData }) {
       if (hoveredCountryId !== null) {
         map.setFeatureState(
           { source: sourceId, sourceLayer: "countries", id: hoveredCountryId },
-          { hover: false }
+          { hover: false },
         );
       }
       hoveredCountryId = null;
@@ -242,7 +249,7 @@ function CountryChoropleth({ data }: { data: typeof countryUserData }) {
     return () => {
       map.off("mousemove", layerId, handleMouseMove);
       map.off("mouseleave", layerId, handleMouseLeave);
-      
+
       try {
         if (map.getLayer(layerId)) map.removeLayer(layerId);
         if (map.getSource(sourceId)) map.removeSource(sourceId);
@@ -260,9 +267,12 @@ export function DashboardContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">FoodMission Overview</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            FOODMISSION Overview
+          </h2>
           <p className="text-muted-foreground">
-            European food sustainability platform - User engagement and geographic distribution
+            European food sustainability platform - User engagement and
+            geographic distribution
           </p>
         </div>
       </div>

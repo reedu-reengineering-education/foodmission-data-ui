@@ -35,7 +35,7 @@ export default async function Home() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/">FoodMission Dashboard</BreadcrumbLink>
+                <BreadcrumbLink href="/">FOODMISSION Dashboard</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
