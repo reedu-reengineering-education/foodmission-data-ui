@@ -19,8 +19,6 @@ import {
 import {
   Bar,
   BarChart,
-  Line,
-  LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -60,52 +58,6 @@ export function SustainabilityContent() {
 
   // --- derived ---
 
-  // Trend: sustainability score & carbon footprint by date
-  const trendMap: Record<
-    string,
-    {
-      susScore: number;
-      carbon: number;
-      susCount: number;
-      carbonCount: number;
-      meals: number;
-    }
-  > = {};
-  for (const row of data) {
-    const d = row.date.slice(0, 10);
-    if (!trendMap[d])
-      trendMap[d] = {
-        susScore: 0,
-        carbon: 0,
-        susCount: 0,
-        carbonCount: 0,
-        meals: 0,
-      };
-    const b = trendMap[d];
-    if (row.avgSustainabilityScore != null) {
-      b.susScore += row.avgSustainabilityScore * row.userCount;
-      b.susCount += row.userCount;
-    }
-    if (row.avgCarbonFootprint != null) {
-      b.carbon += row.avgCarbonFootprint * row.userCount;
-      b.carbonCount += row.userCount;
-    }
-    b.meals += row.userCount;
-  }
-  const trendData = Object.entries(trendMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, v]) => ({
-      date,
-      sustainabilityScore:
-        v.susCount > 0
-          ? Math.round((v.susScore / v.susCount) * 10) / 10
-          : null,
-      carbonFootprint:
-        v.carbonCount > 0
-          ? Math.round((v.carbon / v.carbonCount) * 10) / 10
-          : null,
-    }));
-
   // Nutri-Score distribution (aggregate across all rows)
   const nutriScoreAgg: Record<string, number> = {};
   const ecoScoreAgg: Record<string, number> = {};
@@ -126,40 +78,55 @@ export function SustainabilityContent() {
     }
   }
 
-  const nutriScoreData = ["A", "B", "C", "D", "E"]
-    .filter((g) => nutriScoreAgg[g.toLowerCase()] != null || nutriScoreAgg[g] != null)
-    .map((g) => ({
-      grade: g,
-      count: (nutriScoreAgg[g.toLowerCase()] ?? 0) + (nutriScoreAgg[g] ?? 0),
-    }));
+  const GRADES = ["A", "B", "C", "D", "E"];
+  const gradeCount = (agg: Record<string, number>, g: string) =>
+    (agg[g.toLowerCase()] ?? 0) + (agg[g] ?? 0);
 
-  const ecoScoreData = ["A", "B", "C", "D", "E"]
-    .filter((g) => ecoScoreAgg[g.toLowerCase()] != null || ecoScoreAgg[g] != null)
-    .map((g) => ({
-      grade: g,
-      count: (ecoScoreAgg[g.toLowerCase()] ?? 0) + (ecoScoreAgg[g] ?? 0),
-    }));
+  const nutriScoreData = GRADES
+    .filter((g) => gradeCount(nutriScoreAgg, g) > 0)
+    .map((g) => ({ grade: g, count: gradeCount(nutriScoreAgg, g) }));
 
-  // By meal type
-  const byMealType: Record<
-    string,
-    { susSum: number; carbonSum: number; count: number }
-  > = {};
+  const ecoScoreData = GRADES
+    .filter((g) => gradeCount(ecoScoreAgg, g) > 0)
+    .map((g) => ({ grade: g, count: gradeCount(ecoScoreAgg, g) }));
+
+  // Nutri-Score trend over time (stacked area)
+  const nutriTrendMap: Record<string, Record<string, number>> = {};
   for (const row of data) {
-    if (!byMealType[row.typeOfMeal])
-      byMealType[row.typeOfMeal] = { susSum: 0, carbonSum: 0, count: 0 };
-    const b = byMealType[row.typeOfMeal];
-    b.susSum += (row.avgSustainabilityScore ?? 0) * row.userCount;
-    b.carbonSum += (row.avgCarbonFootprint ?? 0) * row.userCount;
-    b.count += row.userCount;
+    if (!row.nutriScoreDistribution) continue;
+    const d = row.date.slice(0, 10);
+    if (!nutriTrendMap[d]) nutriTrendMap[d] = {};
+    for (const [grade, count] of Object.entries(row.nutriScoreDistribution)) {
+      const g = grade.toUpperCase();
+      nutriTrendMap[d][g] = (nutriTrendMap[d][g] ?? 0) + (count as number);
+    }
   }
-  const mealTypeData = Object.entries(byMealType).map(([meal, v]) => ({
-    meal: meal.charAt(0) + meal.slice(1).toLowerCase().replace("_", " "),
-    sustainabilityScore:
-      Math.round((v.susSum / (v.count || 1)) * 10) / 10,
-    carbonFootprint:
-      Math.round((v.carbonSum / (v.count || 1)) * 10) / 10,
-  }));
+  const nutriTrendData = Object.entries(nutriTrendMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, grades]) => ({ date, ...grades }));
+
+  // Eco-Score trend over time (stacked area)
+  const ecoTrendMap: Record<string, Record<string, number>> = {};
+  for (const row of data) {
+    if (!row.ecoScoreDistribution) continue;
+    const d = row.date.slice(0, 10);
+    if (!ecoTrendMap[d]) ecoTrendMap[d] = {};
+    for (const [grade, count] of Object.entries(row.ecoScoreDistribution)) {
+      const g = grade.toUpperCase();
+      ecoTrendMap[d][g] = (ecoTrendMap[d][g] ?? 0) + (count as number);
+    }
+  }
+  const ecoTrendData = Object.entries(ecoTrendMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, grades]) => ({ date, ...grades }));
+
+  const gradeColors: Record<string, string> = {
+    A: "var(--chart-1)",
+    B: "var(--chart-2)",
+    C: "var(--chart-4)",
+    D: "var(--chart-3)",
+    E: "var(--chart-5)",
+  };
 
   if (loading) {
     return (
@@ -178,8 +145,7 @@ export function SustainabilityContent() {
           Sustainability Dashboard
         </h2>
         <p className="text-muted-foreground">
-          Carbon footprint, sustainability scores &amp; nutri/eco-score
-          distributions
+          Nutri-Score &amp; Eco-Score distributions and trends
         </p>
       </div>
 
@@ -203,90 +169,6 @@ export function SustainabilityContent() {
         </Card>
       ) : (
         <>
-          {/* Sustainability Score Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Sustainability Score Trend</CardTitle>
-              <CardDescription>
-                Average sustainability score over time (higher is better)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  sustainabilityScore: {
-                    label: "Sustainability Score",
-                    color: "var(--chart-1)",
-                  },
-                }}
-                className="h-[350px]"
-              >
-                <AreaChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    type="monotone"
-                    dataKey="sustainabilityScore"
-                    stroke="var(--chart-1)"
-                    fill="var(--chart-1)"
-                    fillOpacity={0.3}
-                    connectNulls
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Carbon Footprint Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Carbon Footprint Trend</CardTitle>
-              <CardDescription>
-                Average carbon footprint per meal over time (lower is better)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  carbonFootprint: {
-                    label: "Carbon Footprint",
-                    color: "var(--chart-3)",
-                  },
-                }}
-                className="h-[350px]"
-              >
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line
-                    type="monotone"
-                    dataKey="carbonFootprint"
-                    stroke="var(--chart-3)"
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
           <div className="grid gap-4 md:grid-cols-2">
             {/* Nutri-Score Distribution */}
             {nutriScoreData.length > 0 && (
@@ -305,7 +187,7 @@ export function SustainabilityContent() {
                         color: "var(--chart-2)",
                       },
                     }}
-                    className="h-[300px]"
+                    className="h-[300px] w-full aspect-auto"
                   >
                     <BarChart data={nutriScoreData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -343,7 +225,7 @@ export function SustainabilityContent() {
                         color: "var(--chart-4)",
                       },
                     }}
-                    className="h-[300px]"
+                    className="h-[300px] w-full aspect-auto"
                   >
                     <BarChart data={ecoScoreData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -365,48 +247,103 @@ export function SustainabilityContent() {
             )}
           </div>
 
-          {/* By Meal Type */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Sustainability by Meal Type</CardTitle>
-              <CardDescription>
-                Average sustainability score and carbon footprint by meal type
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  sustainabilityScore: {
-                    label: "Sustainability",
-                    color: "var(--chart-1)",
-                  },
-                  carbonFootprint: {
-                    label: "Carbon Footprint",
-                    color: "var(--chart-3)",
-                  },
-                }}
-                className="h-[350px]"
-              >
-                <BarChart data={mealTypeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar
-                    dataKey="sustainabilityScore"
-                    fill="var(--chart-1)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="carbonFootprint"
-                    fill="var(--chart-3)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Nutri-Score Trend Over Time */}
+            {nutriTrendData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Nutri-Score Trend</CardTitle>
+                  <CardDescription>
+                    How the A–E grade distribution shifts over time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={Object.fromEntries(
+                      GRADES.map((g) => [
+                        g,
+                        { label: `Grade ${g}`, color: gradeColors[g] },
+                      ]),
+                    )}
+                    className="h-[350px] w-full aspect-auto"
+                  >
+                    <AreaChart data={nutriTrendData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      {GRADES.map((g) => (
+                        <Area
+                          key={g}
+                          type="monotone"
+                          dataKey={g}
+                          stackId="1"
+                          stroke={gradeColors[g]}
+                          fill={gradeColors[g]}
+                          fillOpacity={0.5}
+                        />
+                      ))}
+                    </AreaChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Eco-Score Trend Over Time */}
+            {ecoTrendData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Eco-Score Trend</CardTitle>
+                  <CardDescription>
+                    How the A–E grade distribution shifts over time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={Object.fromEntries(
+                      GRADES.map((g) => [
+                        g,
+                        { label: `Grade ${g}`, color: gradeColors[g] },
+                      ]),
+                    )}
+                    className="h-[350px] w-full aspect-auto"
+                  >
+                    <AreaChart data={ecoTrendData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      {GRADES.map((g) => (
+                        <Area
+                          key={g}
+                          type="monotone"
+                          dataKey={g}
+                          stackId="1"
+                          stroke={gradeColors[g]}
+                          fill={gradeColors[g]}
+                          fillOpacity={0.5}
+                        />
+                      ))}
+                    </AreaChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </>
       )}
     </div>

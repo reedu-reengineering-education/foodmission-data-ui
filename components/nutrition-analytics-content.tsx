@@ -111,8 +111,7 @@ export function NutritionAnalyticsContent() {
           (row.avgProteins ?? 0) * row.mealCount) /
         total;
       bucket.avgFat =
-        (bucket.avgFat * bucket.mealCount +
-          (row.avgFat ?? 0) * row.mealCount) /
+        (bucket.avgFat * bucket.mealCount + (row.avgFat ?? 0) * row.mealCount) /
         total;
       bucket.avgCarbs =
         (bucket.avgCarbs * bucket.mealCount +
@@ -133,7 +132,13 @@ export function NutritionAnalyticsContent() {
   // Group by typeOfMeal for breakdown bar
   const mealTypeTotals: Record<
     string,
-    { calories: number; proteins: number; fat: number; carbs: number; count: number }
+    {
+      calories: number;
+      proteins: number;
+      fat: number;
+      carbs: number;
+      count: number;
+    }
   > = {};
   for (const row of data) {
     if (!mealTypeTotals[row.typeOfMeal]) {
@@ -154,8 +159,7 @@ export function NutritionAnalyticsContent() {
   }
 
   const mealTypeData = Object.entries(mealTypeTotals).map(([meal, v]) => ({
-    meal:
-      meal.charAt(0) + meal.slice(1).toLowerCase().replace("_", " "),
+    meal: meal.charAt(0) + meal.slice(1).toLowerCase().replace("_", " "),
     avgCalories: Math.round(v.calories / (v.count || 1)),
     avgProteins: Math.round((v.proteins / (v.count || 1)) * 10) / 10,
     avgFat: Math.round((v.fat / (v.count || 1)) * 10) / 10,
@@ -165,7 +169,16 @@ export function NutritionAnalyticsContent() {
   // Demographic breakdown
   const dimKey = demoDimension as keyof DemographicNutrition;
   const demoGrouped = demoData.reduce<
-    Record<string, { calories: number; proteins: number; fat: number; carbs: number; count: number }>
+    Record<
+      string,
+      {
+        calories: number;
+        proteins: number;
+        fat: number;
+        carbs: number;
+        count: number;
+      }
+    >
   >((acc, row) => {
     const val = (row[dimKey] as string) ?? "Unknown";
     if (!acc[val])
@@ -301,223 +314,227 @@ export function NutritionAnalyticsContent() {
               </ChartContainer>
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground">
-              {trendData.length} data points · {data.reduce((s, d) => s + d.mealCount, 0)} total meals
+              {trendData.length} data points ·{" "}
+              {data.reduce((s, d) => s + d.mealCount, 0)} total meals
             </CardFooter>
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Macronutrient Trend */}
             <Card>
-              <CardHeader>
-                <CardTitle>Macronutrient Trends</CardTitle>
-                <CardDescription>
-                  Average protein, fat &amp; carbs (g) over time
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgProteins: {
-                      label: "Protein (g)",
-                      color: "var(--chart-2)",
-                    },
-                    avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
-                    avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
-                  }}
-                  className="h-[350px]"
-                >
-                  <LineChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 10 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Line
-                      type="monotone"
-                      dataKey="avgProteins"
-                      stroke="var(--chart-2)"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="avgFat"
-                      stroke="var(--chart-3)"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="avgCarbs"
-                      stroke="var(--chart-4)"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <CardHeader>
+              <CardTitle>Macronutrient Trends</CardTitle>
+              <CardDescription>
+                Average protein, fat &amp; carbs (g) over time
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  avgProteins: {
+                    label: "Protein (g)",
+                    color: "var(--chart-2)",
+                  },
+                  avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
+                  avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
+                }}
+                className="h-[350px] w-full aspect-auto"
+              >
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Line
+                    type="monotone"
+                    dataKey="avgProteins"
+                    stroke="var(--chart-2)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="avgFat"
+                    stroke="var(--chart-3)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="avgCarbs"
+                    stroke="var(--chart-4)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
 
-            {/* By Meal Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Nutrition by Meal Type</CardTitle>
-                <CardDescription>
-                  Average calories per meal type
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgCalories: {
-                      label: "Avg Calories",
-                      color: "var(--chart-1)",
-                    },
-                  }}
-                  className="h-[350px]"
-                >
-                  <BarChart data={mealTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      dataKey="avgCalories"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+          {/* By Meal Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Nutrition by Meal Type</CardTitle>
+              <CardDescription>
+                Average calories per meal type
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  avgCalories: {
+                    label: "Avg Calories",
+                    color: "var(--chart-1)",
+                  },
+                }}
+                className="h-[350px] w-full aspect-auto"
+              >
+                <BarChart data={mealTypeData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey="avgCalories"
+                    fill="var(--chart-1)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
           </div>
 
-          {/* Calorie Percentiles */}
-          {percentileData.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Calorie Distribution (Percentiles)</CardTitle>
-                <CardDescription>
-                  25th, 50th (median), and 75th percentile of calories
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    p25: { label: "25th %ile", color: "var(--chart-3)" },
-                    p50: { label: "Median", color: "var(--chart-1)" },
-                    p75: { label: "75th %ile", color: "var(--chart-5)" },
-                  }}
-                  className="h-[350px]"
-                >
-                  <LineChart data={percentileData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 10 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Line
-                      type="monotone"
-                      dataKey="p75"
-                      stroke="var(--chart-5)"
-                      strokeWidth={1}
-                      strokeDasharray="5 5"
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="p50"
-                      stroke="var(--chart-1)"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="p25"
-                      stroke="var(--chart-3)"
-                      strokeWidth={1}
-                      strokeDasharray="5 5"
-                      dot={false}
-                    />
-                  </LineChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          )}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Calorie Percentiles */}
+            {percentileData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Calorie Distribution (Percentiles)</CardTitle>
+                  <CardDescription>
+                    25th, 50th (median), and 75th percentile of calories
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={{
+                      p25: { label: "25th %ile", color: "var(--chart-3)" },
+                      p50: { label: "Median", color: "var(--chart-1)" },
+                      p75: { label: "75th %ile", color: "var(--chart-5)" },
+                    }}
+                    className="h-[350px] w-full aspect-auto"
+                  >
+                    <LineChart data={percentileData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Line
+                        type="monotone"
+                        dataKey="p75"
+                        stroke="var(--chart-5)"
+                        strokeWidth={1}
+                        strokeDasharray="5 5"
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="p50"
+                        stroke="var(--chart-1)"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="p25"
+                        stroke="var(--chart-3)"
+                        strokeWidth={1}
+                        strokeDasharray="5 5"
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Demographic Breakdown */}
-          {demoChartData.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Nutrition by {DIMENSION_LABELS[demoDimension] ?? demoDimension}
-                </CardTitle>
-                <CardDescription>
-                  Average calories per demographic group (k≥5 anonymity)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgCalories: {
-                      label: "Avg Calories",
-                      color: "var(--chart-1)",
-                    },
-                    avgProteins: {
-                      label: "Protein (g)",
-                      color: "var(--chart-2)",
-                    },
-                    avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
-                    avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
-                  }}
-                  className="h-[350px]"
-                >
-                  <BarChart data={demoChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="avgCalories"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="avgProteins"
-                      fill="var(--chart-2)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="avgFat"
-                      fill="var(--chart-3)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="avgCarbs"
-                      fill="var(--chart-4)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Groups with fewer than 5 users are suppressed for privacy
-              </CardFooter>
-            </Card>
-          )}
+            {/* Demographic Breakdown */}
+            {demoChartData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    Nutrition by{" "}
+                    {DIMENSION_LABELS[demoDimension] ?? demoDimension}
+                  </CardTitle>
+                  <CardDescription>
+                    Average calories per demographic group (k≥5 anonymity)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={{
+                      avgCalories: {
+                        label: "Avg Calories",
+                        color: "var(--chart-1)",
+                      },
+                      avgProteins: {
+                        label: "Protein (g)",
+                        color: "var(--chart-2)",
+                      },
+                      avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
+                      avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
+                    }}
+                    className="h-[350px] w-full aspect-auto"
+                  >
+                    <BarChart data={demoChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Bar
+                        dataKey="avgCalories"
+                        fill="var(--chart-1)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="avgProteins"
+                        fill="var(--chart-2)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="avgFat"
+                        fill="var(--chart-3)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="avgCarbs"
+                        fill="var(--chart-4)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+                <CardFooter className="text-xs text-muted-foreground">
+                  Groups with fewer than 5 users are suppressed for privacy
+                </CardFooter>
+              </Card>
+            )}
+          </div>
         </>
       )}
     </div>

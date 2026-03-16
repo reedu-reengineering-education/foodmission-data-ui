@@ -120,19 +120,33 @@ export function MealPatternsContent() {
     avgItemsPerMeal: Math.round((v.items / (v.meals || 1)) * 10) / 10,
   }));
 
-  // Average meal hour distribution
-  const hourData = data
-    .filter((d) => d.avgMealHour !== null)
-    .reduce<Record<string, { sum: number; count: number }>>((acc, row) => {
-      const key = row.typeOfMeal;
-      if (!acc[key]) acc[key] = { sum: 0, count: 0 };
-      acc[key].sum += row.avgMealHour!;
-      acc[key].count++;
-      return acc;
-    }, {});
-  const mealTimingData = Object.entries(hourData).map(([meal, v]) => ({
+  // Total meals over time (daily)
+  const totalMealsTrend = Object.entries(trendMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, v]) => ({ date, totalMeals: v.meals }));
+
+  // Meal volume by type over time (stacked area)
+  const mealTypesByDate: Record<string, Record<string, number>> = {};
+  const allMealTypes = new Set<string>();
+  for (const row of data) {
+    const d = row.date.slice(0, 10);
+    if (!mealTypesByDate[d]) mealTypesByDate[d] = {};
+    const label =
+      row.typeOfMeal.charAt(0) +
+      row.typeOfMeal.slice(1).toLowerCase().replace("_", " ");
+    allMealTypes.add(label);
+    mealTypesByDate[d][label] =
+      (mealTypesByDate[d][label] ?? 0) + row.totalMeals;
+  }
+  const mealVolumeByType = Object.entries(mealTypesByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, types]) => ({ date, ...types }));
+  const mealTypeKeys = Array.from(allMealTypes).sort();
+
+  // Meal complexity by meal type (avg items per meal)
+  const complexityData = Object.entries(byMealType).map(([meal, v]) => ({
     meal: meal.charAt(0) + meal.slice(1).toLowerCase().replace("_", " "),
-    avgHour: Math.round((v.sum / v.count) * 10) / 10,
+    avgItemsPerMeal: Math.round((v.items / (v.meals || 1)) * 10) / 10,
   }));
 
   if (loading) {
@@ -150,7 +164,7 @@ export function MealPatternsContent() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Meal Patterns</h2>
         <p className="text-muted-foreground">
-          Pantry usage, eating out rates, items per meal &amp; meal timing
+          Pantry usage, eating out rates, meal volume &amp; complexity
         </p>
       </div>
 
@@ -323,48 +337,134 @@ export function MealPatternsContent() {
             </Card>
           </div>
 
-          {/* Meal Timing */}
-          {mealTimingData.length > 0 && (
+          {/* Total Meals Over Time */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Meals Over Time</CardTitle>
+              <CardDescription>
+                Daily meal logging volume — spot weekday/weekend patterns and
+                growth
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  totalMeals: {
+                    label: "Total Meals",
+                    color: "var(--chart-5)",
+                  },
+                }}
+                className="h-[300px] w-full aspect-auto"
+              >
+                <AreaChart data={totalMealsTrend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="totalMeals"
+                    stroke="var(--chart-5)"
+                    fill="var(--chart-5)"
+                    fillOpacity={0.3}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Meal Volume by Type (stacked area) */}
+            {mealVolumeByType.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Meal Volume by Type</CardTitle>
+                  <CardDescription>
+                    How total meals break down across meal types over time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={Object.fromEntries(
+                      mealTypeKeys.map((mt, i) => [
+                        mt,
+                        {
+                          label: mt,
+                          color: `var(--chart-${(i % 5) + 1})`,
+                        },
+                      ]),
+                    )}
+                    className="h-[350px] w-full aspect-auto"
+                  >
+                    <AreaChart data={mealVolumeByType}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 10 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      {mealTypeKeys.map((mt, i) => (
+                        <Area
+                          key={mt}
+                          type="monotone"
+                          dataKey={mt}
+                          stackId="1"
+                          stroke={`var(--chart-${(i % 5) + 1})`}
+                          fill={`var(--chart-${(i % 5) + 1})`}
+                          fillOpacity={0.4}
+                        />
+                      ))}
+                    </AreaChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Meal Complexity by Type */}
             <Card>
               <CardHeader>
-                <CardTitle>Average Meal Timing</CardTitle>
+                <CardTitle>Meal Complexity by Type</CardTitle>
                 <CardDescription>
-                  Average hour of the day for each meal type (24h format)
+                  Average number of food items per meal — are dinners more
+                  complex than snacks?
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer
                   config={{
-                    avgHour: {
-                      label: "Avg Hour",
-                      color: "var(--chart-5)",
+                    avgItemsPerMeal: {
+                      label: "Avg Items/Meal",
+                      color: "var(--chart-2)",
                     },
                   }}
-                  className="h-[300px]"
+                  className="h-[350px] w-full aspect-auto"
                 >
-                  <BarChart data={mealTimingData}>
+                  <BarChart data={complexityData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
-                      domain={[0, 24]}
-                      label={{
-                        value: "Hour",
-                        angle: -90,
-                        position: "insideLeft",
-                      }}
-                    />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar
-                      dataKey="avgHour"
-                      fill="var(--chart-5)"
+                      dataKey="avgItemsPerMeal"
+                      fill="var(--chart-2)"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
             </Card>
-          )}
+          </div>
         </>
       )}
     </div>
