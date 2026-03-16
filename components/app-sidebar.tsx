@@ -10,6 +10,7 @@ import {
   UserCheck,
   Bell,
   Utensils,
+  BarChart3,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -24,7 +25,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
-import { set } from "better-auth";
 import { useEffect, useState } from "react";
 
 // FOODMISSION Data Dashboard Navigation
@@ -56,6 +56,19 @@ const data = {
       title: "Dashboard",
       url: "/",
       icon: LayoutDashboard,
+    },
+    {
+      title: "Analytics",
+      url: "/nutrition-analytics",
+      icon: BarChart3,
+      items: [
+        { title: "Nutrition", url: "/nutrition-analytics" },
+        { title: "Food Popularity", url: "/food-popularity" },
+        { title: "Meal Patterns", url: "/meal-patterns" },
+        { title: "Sustainability", url: "/sustainability" },
+        { title: "Meal Classification", url: "/meal-classification" },
+        { title: "Demographic Insights", url: "/demographic-insights" },
+      ],
     },
   ],
   research: [
