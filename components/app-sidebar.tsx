@@ -125,6 +125,15 @@ const data = {
       items: [],
     },
   ],
+  personalData: [
+    {
+      title: "Personal Food Profile",
+      url: "/personal-profile",
+      icon: Soup,
+      disabled: true,
+      items: [],
+    },
+  ],
   research: [
     {
       name: "Behavior Change",
@@ -173,6 +182,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} label="Citizen Science Data" />
         <NavMain items={data.appAnalytics} label="Analytics" />
+        <NavMain items={data.personalData} label="Personal Data" />
         <NavProjects projects={data.research} />
       </SidebarContent>
       <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
