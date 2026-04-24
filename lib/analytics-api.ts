@@ -168,8 +168,10 @@ export interface CrossDimNutrition extends Omit<DailyNutrition, "date"> {
   dim2Value: string;
 }
 
-export interface CrossDimClassification
-  extends Omit<MealClassification, "date"> {
+export interface CrossDimClassification extends Omit<
+  MealClassification,
+  "date"
+> {
   date: string;
   dim1Name: string;
   dim1Value: string;
@@ -219,79 +221,79 @@ export interface AnalyticsSummary {
 export const analyticsApi = {
   nutrition(f: AnalyticsFilters = {}) {
     return get<DailyNutrition[]>(
-      "/analytics/public/nutrition",
+      "/analytics/meallog/public/nutrition",
       buildParams({ ...f }),
     );
   },
   foodPopularity(f: AnalyticsFilters & { limit?: string } = {}) {
     return get<FoodPopularity[]>(
-      "/analytics/public/food-popularity",
+      "/analytics/meallog/public/food-popularity",
       buildParams({ ...f }),
     );
   },
   mealPatterns(f: AnalyticsFilters = {}) {
     return get<MealPatterns[]>(
-      "/analytics/public/meal-patterns",
+      "/analytics/meallog/public/meal-patterns",
       buildParams({ ...f }),
     );
   },
   sustainability(f: AnalyticsFilters = {}) {
     return get<Sustainability[]>(
-      "/analytics/public/sustainability",
+      "/analytics/meallog/public/sustainability",
       buildParams({ ...f }),
     );
   },
   mealClassification(f: AnalyticsFilters = {}) {
     return get<MealClassification[]>(
-      "/analytics/public/meal-classification",
+      "/analytics/meallog/public/meal-classification",
       buildParams({ ...f }),
     );
   },
   mealRecords(f: AnalyticsFilters = {}) {
     return get<MealRecord[]>(
-      "/analytics/public/meal-records",
+      "/analytics/meallog/public/meal-records",
       buildParams({ ...f }),
     );
   },
   demographicNutrition(f: DemographicFilters = {}) {
     return get<DemographicNutrition[]>(
-      "/analytics/public/demographic/nutrition",
+      "/analytics/meallog/public/demographic/nutrition",
       buildParams({ ...f }),
     );
   },
   demographicClassification(f: DemographicFilters = {}) {
     return get<DemographicClassification[]>(
-      "/analytics/public/demographic/classification",
+      "/analytics/meallog/public/demographic/classification",
       buildParams({ ...f }),
     );
   },
   demographicPatterns(f: DemographicFilters = {}) {
     return get<DemographicPatterns[]>(
-      "/analytics/public/demographic/patterns",
+      "/analytics/meallog/public/demographic/patterns",
       buildParams({ ...f }),
     );
   },
   crossDimNutrition(f: CrossDimFilters = {}) {
     return get<CrossDimNutrition[]>(
-      "/analytics/public/cross-dim/nutrition",
+      "/analytics/meallog/public/cross-dim/nutrition",
       buildParams({ ...f }),
     );
   },
   crossDimClassification(f: CrossDimFilters = {}) {
     return get<CrossDimClassification[]>(
-      "/analytics/public/cross-dim/classification",
+      "/analytics/meallog/public/cross-dim/classification",
       buildParams({ ...f }),
     );
   },
   crossDimPatterns(f: CrossDimFilters = {}) {
     return get<CrossDimPatterns[]>(
-      "/analytics/public/cross-dim/patterns",
+      "/analytics/meallog/public/cross-dim/patterns",
       buildParams({ ...f }),
     );
   },
   summary(f: Pick<AnalyticsFilters, "from" | "to"> = {}) {
     return get<AnalyticsSummary>(
-      "/analytics/public/summary",
+      "/analytics/meallog/public/summary",
       buildParams({ ...f }),
     );
   },
