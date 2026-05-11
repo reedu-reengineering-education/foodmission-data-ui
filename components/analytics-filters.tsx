@@ -6,11 +6,11 @@ import { Label } from "@/components/ui/label";
 import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/analytics-api";
 
 interface AnalyticsFiltersProps {
-  from: string;
-  to: string;
+  periodStart: string;
+  periodEnd: string;
   typeOfMeal: string;
-  onFromChange: (v: string) => void;
-  onToChange: (v: string) => void;
+  onPeriodStartChange: (v: string) => void;
+  onPeriodEndChange: (v: string) => void;
   onTypeOfMealChange: (v: string) => void;
   onApply: () => void;
   showDimension?: boolean;
@@ -24,11 +24,11 @@ interface AnalyticsFiltersProps {
 }
 
 export function AnalyticsFiltersBar({
-  from,
-  to,
+  periodStart,
+  periodEnd,
   typeOfMeal,
-  onFromChange,
-  onToChange,
+  onPeriodStartChange,
+  onPeriodEndChange,
   onTypeOfMealChange,
   onApply,
   showDimension = false,
@@ -47,8 +47,8 @@ export function AnalyticsFiltersBar({
         <Input
           type="date"
           className="h-8 w-36"
-          value={from}
-          onChange={(e) => onFromChange(e.target.value)}
+          value={periodStart}
+          onChange={(e) => onPeriodStartChange(e.target.value)}
         />
       </div>
       <div className="space-y-1">
@@ -56,8 +56,8 @@ export function AnalyticsFiltersBar({
         <Input
           type="date"
           className="h-8 w-36"
-          value={to}
-          onChange={(e) => onToChange(e.target.value)}
+          value={periodEnd}
+          onChange={(e) => onPeriodEndChange(e.target.value)}
         />
       </div>
       <div className="space-y-1">

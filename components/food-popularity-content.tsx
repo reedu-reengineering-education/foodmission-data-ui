@@ -20,8 +20,8 @@ import { analyticsApi, type FoodPopularity } from "@/lib/analytics-api";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function FoodPopularityContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
   const [typeOfMeal, setTypeOfMeal] = useState("");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FoodPopularity[]>([]);
@@ -30,8 +30,8 @@ export function FoodPopularityContent() {
     setLoading(true);
     try {
       const result = await analyticsApi.foodPopularity({
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
         limit: "30",
       });
@@ -41,7 +41,7 @@ export function FoodPopularityContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal]);
+  }, [periodStart, periodEnd, typeOfMeal]);
 
   useEffect(() => {
     fetchData();
@@ -125,11 +125,11 @@ export function FoodPopularityContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
       />

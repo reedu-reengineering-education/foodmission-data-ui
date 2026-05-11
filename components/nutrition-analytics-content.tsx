@@ -37,8 +37,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function NutritionAnalyticsContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
   const [typeOfMeal, setTypeOfMeal] = useState("");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DailyNutrition[]>([]);
@@ -49,8 +49,8 @@ export function NutritionAnalyticsContent() {
     setLoading(true);
     try {
       const filters = {
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
       };
       const [nutrition, demographic] = await Promise.all([
@@ -67,7 +67,7 @@ export function NutritionAnalyticsContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal, demoDimension]);
+  }, [periodStart, periodEnd, typeOfMeal, demoDimension]);
 
   useEffect(() => {
     fetchData();
@@ -245,11 +245,11 @@ export function NutritionAnalyticsContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
         showDimension
