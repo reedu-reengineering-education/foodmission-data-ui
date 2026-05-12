@@ -6,10 +6,14 @@ import {
   GalleryVerticalEnd,
   AudioWaveform,
   Command,
-  FlaskConical,
-  UserCheck,
-  Bell,
-  Utensils,
+  Soup,
+  Boxes,
+  ShoppingCart,
+  AppWindow,
+  BookOpen,
+  Trash2,
+  Brain,
+  Share2,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -24,7 +28,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
-import { set } from "better-auth";
 import { useEffect, useState } from "react";
 
 // FOODMISSION Data Dashboard Navigation
@@ -57,27 +60,92 @@ const data = {
       url: "/",
       icon: LayoutDashboard,
     },
+    {
+      title: "Meal Log",
+      url: "/nutrition-analytics",
+      icon: Soup,
+      items: [
+        { title: "Nutrition", url: "/nutrition-analytics" },
+        { title: "Food Popularity", url: "/food-popularity" },
+        { title: "Meal Patterns", url: "/meal-patterns" },
+        { title: "Sustainability", url: "/sustainability" },
+        { title: "Meal Classification", url: "/meal-classification" },
+        { title: "Demographic Insights", url: "/demographic-insights" },
+      ],
+    },
+    {
+      title: "Pantry",
+      url: "/pantry-analytics",
+      icon: Boxes,
+      disabled: true,
+      items: [
+        { title: "Nutrition", url: "/nutrition-analytics" },
+        { title: "Food Popularity", url: "/food-popularity" },
+        { title: "Meal Patterns", url: "/meal-patterns" },
+        { title: "Sustainability", url: "/sustainability" },
+        { title: "Meal Classification", url: "/meal-classification" },
+        { title: "Demographic Insights", url: "/demographic-insights" },
+      ],
+    },
+    {
+      title: "ShoppingList",
+      url: "/shoppingList-analytics",
+      icon: ShoppingCart,
+      disabled: true,
+      items: [
+        { title: "Nutrition", url: "/nutrition-analytics" },
+        { title: "Food Popularity", url: "/food-popularity" },
+        { title: "Meal Patterns", url: "/meal-patterns" },
+        { title: "Sustainability", url: "/sustainability" },
+        { title: "Meal Classification", url: "/meal-classification" },
+        { title: "Demographic Insights", url: "/demographic-insights" },
+      ],
+    },
+    {
+      title: "Recipes",
+      url: "/recipes",
+      icon: BookOpen,
+      disabled: true,
+      items: [],
+    },
+    {
+      title: "Food Waste",
+      url: "/food-waste",
+      icon: Trash2,
+      disabled: true,
+      items: [],
+    },
+  ],
+  appAnalytics: [
+    {
+      title: "App Analytics",
+      url: "/app-analytics",
+      icon: AppWindow,
+      disabled: true,
+      items: [],
+    },
+  ],
+  personalData: [
+    {
+      title: "Personal Food Profile",
+      url: "/personal-profile",
+      icon: Soup,
+      disabled: true,
+      items: [],
+    },
   ],
   research: [
     {
-      name: "Dietary Baseline",
-      url: "/dietary-baseline",
-      icon: Utensils,
-    },
-    {
       name: "Behavior Change",
       url: "/behavior-change",
-      icon: FlaskConical,
+      icon: Brain,
+      disabled: true,
     },
     {
       name: "Social Influence",
       url: "/social-influence",
-      icon: UserCheck,
-    },
-    {
-      name: "Waste Tracking",
-      url: "/waste-reminders",
-      icon: Bell,
+      icon: Share2,
+      disabled: true,
     },
   ],
 };
@@ -112,7 +180,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={data.navMain} label="Citizen Science Data" />
+        <NavMain items={data.appAnalytics} label="Analytics" />
+        <NavMain items={data.personalData} label="Personal Data" />
         <NavProjects projects={data.research} />
       </SidebarContent>
       <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
