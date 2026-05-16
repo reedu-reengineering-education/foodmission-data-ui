@@ -16,13 +16,14 @@ import {
 } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ScatterChart, Scatter, ZAxis, Tooltip, Cell } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import { analyticsApi, type FoodPopularity } from "@/lib/analytics-api";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type FoodPopularity } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
 
 export function FoodPopularityContent() {
-  const [periodStart, setPeriodStart] = useState("");
-  const [periodEnd, setPeriodEnd] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FoodPopularity[]>([]);
 
@@ -135,13 +136,7 @@ export function FoodPopularityContent() {
       />
 
       {topFoods.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published food popularity data available.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard message="No published food popularity data available." />
       ) : (
         <>
           {/* Top Foods Horizontal Bar */}

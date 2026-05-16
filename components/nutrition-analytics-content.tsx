@@ -28,22 +28,18 @@ import {
   AreaChart,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import {
-  analyticsApi,
-  type DailyNutrition,
-  type DemographicNutrition,
-  DIMENSION_LABELS,
-} from "@/lib/analytics-api";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type DailyNutrition, type DemographicNutrition } from "@/lib/types";
+import { DIMENSION_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
 
 export function NutritionAnalyticsContent() {
-  const [periodStart, setPeriodStart] = useState("");
-  const [periodEnd, setPeriodEnd] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension: demoDimension, setDimension: setDemoDimension } = useAnalyticsFiltersWithDimension("ageGroup");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DailyNutrition[]>([]);
   const [demoData, setDemoData] = useState<DemographicNutrition[]>([]);
-  const [demoDimension, setDemoDimension] = useState("ageGroup");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -258,13 +254,7 @@ export function NutritionAnalyticsContent() {
       />
 
       {data.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published nutrition data available for the selected filters.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard message="No published nutrition data available for the selected filters." />
       ) : (
         <>
           {/* Calorie Trend */}

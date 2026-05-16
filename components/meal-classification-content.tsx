@@ -26,19 +26,15 @@ import {
   CartesianGrid,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import {
-  analyticsApi,
-  type MealClassification,
-  type DemographicClassification,
-  DIMENSION_LABELS,
-} from "@/lib/analytics-api";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type MealClassification, type DemographicClassification } from "@/lib/types";
+import { DIMENSION_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
 
 export function MealClassificationContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
-  const [dimension, setDimension] = useState("ageGroup");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension, setDimension } = useAnalyticsFiltersWithDimension("ageGroup");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MealClassification[]>([]);
   const [demoData, setDemoData] = useState<DemographicClassification[]>([]);
@@ -47,8 +43,8 @@ export function MealClassificationContent() {
     setLoading(true);
     try {
       const filters = {
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
       };
       const [classification, demographic] = await Promise.all([
@@ -65,7 +61,7 @@ export function MealClassificationContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal, dimension]);
+  }, [periodStart, periodEnd, typeOfMeal, dimension]);
 
   useEffect(() => {
     fetchData();
@@ -237,11 +233,11 @@ export function MealClassificationContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
         showDimension
@@ -250,13 +246,7 @@ export function MealClassificationContent() {
       />
 
       {data.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published classification data available.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard message="No published classification data available." />
       ) : (
         <>
           {/* Vegetarian / Vegan / Ultra-Processed Trend */}

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/analytics-api";
+import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/constants";
 
 interface AnalyticsFiltersProps {
   periodStart: string;

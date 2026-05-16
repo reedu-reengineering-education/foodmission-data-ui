@@ -28,13 +28,14 @@ import {
   ComposedChart,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import { analyticsApi, type MealPatterns } from "@/lib/analytics-api";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type MealPatterns } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
 
 export function MealPatternsContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MealPatterns[]>([]);
 
@@ -42,8 +43,8 @@ export function MealPatternsContent() {
     setLoading(true);
     try {
       const result = await analyticsApi.mealPatterns({
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
       });
       setData(result);
@@ -52,7 +53,7 @@ export function MealPatternsContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal]);
+  }, [periodStart, periodEnd, typeOfMeal]);
 
   useEffect(() => {
     fetchData();
@@ -169,23 +170,17 @@ export function MealPatternsContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
       />
 
       {data.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published meal pattern data available.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard message="No published meal pattern data available." />
       ) : (
         <>
           {/* Pantry & Eaten-Out Trends */}

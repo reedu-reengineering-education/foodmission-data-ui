@@ -26,13 +26,14 @@ import {
   AreaChart,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import { analyticsApi, type Sustainability } from "@/lib/analytics-api";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type Sustainability } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
 
 export function SustainabilityContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Sustainability[]>([]);
 
@@ -40,8 +41,8 @@ export function SustainabilityContent() {
     setLoading(true);
     try {
       const result = await analyticsApi.sustainability({
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
       });
       setData(result);
@@ -50,7 +51,7 @@ export function SustainabilityContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal]);
+  }, [periodStart, periodEnd, typeOfMeal]);
 
   useEffect(() => {
     fetchData();
@@ -150,23 +151,17 @@ export function SustainabilityContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
       />
 
       {data.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published sustainability data available.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard message="No published sustainability data available." />
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2">

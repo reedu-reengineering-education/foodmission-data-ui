@@ -17,8 +17,8 @@ export enum Dimension {
 }
 
 export interface AnalyticsFilters {
-  from?: string;
-  to?: string;
+  periodStart?: string;
+  periodEnd?: string;
   typeOfMeal?: string;
 }
 

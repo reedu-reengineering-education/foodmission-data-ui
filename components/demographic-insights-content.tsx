@@ -18,21 +18,19 @@ import {
 } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import { analyticsApi } from "@/lib/analytics-api";
 import {
-  analyticsApi,
   type CrossDimNutrition,
   type CrossDimClassification,
   type CrossDimPatterns,
-  DIMENSION_LABELS,
-} from "@/lib/analytics-api";
+} from "@/lib/types";
+import { DIMENSION_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFiltersWithCrossDim } from "@/hooks/use-analytics-filters";
 
 export function DemographicInsightsContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
-  const [dim1, setDim1] = useState("ageGroup");
-  const [dim2, setDim2] = useState("gender");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dim1, setDim1, dim2, setDim2 } = useAnalyticsFiltersWithCrossDim("ageGroup", "gender");
   const [loading, setLoading] = useState(true);
   const [nutrition, setNutrition] = useState<CrossDimNutrition[]>([]);
   const [classification, setClassification] = useState<
@@ -44,8 +42,8 @@ export function DemographicInsightsContent() {
     setLoading(true);
     try {
       const filters = {
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
         dim1: dim1 || undefined,
         dim2: dim2 || undefined,
@@ -63,7 +61,7 @@ export function DemographicInsightsContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal, dim1, dim2]);
+  }, [periodStart, periodEnd, typeOfMeal, dim1, dim2]);
 
   useEffect(() => {
     fetchData();
@@ -184,11 +182,11 @@ export function DemographicInsightsContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
         showCrossDim
@@ -199,15 +197,9 @@ export function DemographicInsightsContent() {
       />
 
       {noData ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published cross-dimensional data for{" "}
-              <strong>{crossLabel}</strong>. Try different dimension
-              combinations or date ranges.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard
+          message={`No published cross-dimensional data for ${crossLabel}. Try different dimension combinations or date ranges.`}
+        />
       ) : (
         <>
           {/* Cross-dim Nutrition */}
