@@ -152,7 +152,7 @@ export function SustainabilityContent() {
                 data={nutriScoreData as unknown as Record<string, unknown>[]}
                 bars={[{ dataKey: "count", fill: "var(--chart-2)" }]}
                 xAxisKey="grade"
-                height="h-[300px] w-full aspect-auto"
+                height="h-[300px]"
                 footer="Grade A = highest nutritional quality"
               />
             )}
@@ -166,7 +166,7 @@ export function SustainabilityContent() {
                 data={ecoScoreData as unknown as Record<string, unknown>[]}
                 bars={[{ dataKey: "count", fill: "var(--chart-4)" }]}
                 xAxisKey="grade"
-                height="h-[300px] w-full aspect-auto"
+                height="h-[300px]"
                 footer="Grade A = lowest environmental impact"
               />
             )}

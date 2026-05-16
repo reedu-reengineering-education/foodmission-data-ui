@@ -14,6 +14,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 import {
   Bar,
   BarChart,
@@ -67,7 +68,7 @@ export function HorizontalBarChartCard({
   const containerProps =
     typeof height === "number"
       ? { style: { height }, className: "w-full" }
-      : { className: height };
+      : { className: cn(height, "w-full") };
 
   return (
     <Card id={id} className={className}>

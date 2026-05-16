@@ -225,7 +225,6 @@ export function DemographicInsightsContent() {
                 ]}
                 yAxisKey="label"
                 yAxisWidth={160}
-                height="h-[350px]"
                 showLegend
               />
             )}
@@ -246,7 +245,6 @@ export function DemographicInsightsContent() {
                 ]}
                 yAxisKey="label"
                 yAxisWidth={160}
-                height="h-[350px]"
                 showLegend
               />
             )}

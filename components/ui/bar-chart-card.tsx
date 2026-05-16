@@ -14,6 +14,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 import {
   Bar,
   BarChart,
@@ -43,7 +44,7 @@ interface BarChartCardProps {
   /** Optional y-axis unit label rendered vertically on the left */
   yAxisLabel?: string;
   showLegend?: boolean;
-  /** Tailwind height class applied to ChartContainer (default: "h-[350px]") */
+  /** Tailwind height class (default: "h-[350px]"). Width defaults to w-full aspect-auto. */
   height?: string;
   footer?: React.ReactNode;
   className?: string;
@@ -73,7 +74,7 @@ export function BarChartCard({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <ChartContainer config={config} className={height}>
+        <ChartContainer config={config} className={cn(height, "w-full aspect-auto")}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis

@@ -14,6 +14,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 import {
   Area,
   AreaChart,
@@ -42,7 +43,7 @@ interface AreaChartCardProps {
   /** Optional y-axis unit label rendered vertically */
   yAxisLabel?: string;
   showLegend?: boolean;
-  /** Tailwind height class applied to ChartContainer (default: "h-[350px] w-full aspect-auto") */
+  /** Tailwind height class (default: "h-[350px]"). Width defaults to w-full aspect-auto. */
   height?: string;
   footer?: React.ReactNode;
   className?: string;
@@ -58,7 +59,7 @@ export function AreaChartCard({
   xAxisKey = "date",
   yAxisLabel,
   showLegend,
-  height = "h-[350px] w-full aspect-auto",
+  height = "h-[350px]",
   footer,
   className,
 }: AreaChartCardProps) {
@@ -69,7 +70,7 @@ export function AreaChartCard({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <ChartContainer config={config} className={height}>
+        <ChartContainer config={config} className={cn(height, "w-full aspect-auto")}>
           <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis

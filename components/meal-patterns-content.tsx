@@ -280,7 +280,7 @@ export function MealPatternsContent() {
             config={{ totalMeals: { label: "Total Meals", color: "var(--chart-5)" } }}
             data={totalMealsTrend as unknown as Record<string, unknown>[]}
             areas={[{ dataKey: "totalMeals", stroke: "var(--chart-5)", fill: "var(--chart-5)", fillOpacity: 0.3 }]}
-            height="h-[300px] w-full aspect-auto"
+            height="h-[300px]"
           />
 
           <div className="grid gap-4 md:grid-cols-2">
