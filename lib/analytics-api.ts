@@ -1,326 +1,117 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
-export interface AnalyticsFilters {
-  from?: string;
-  to?: string;
-  typeOfMeal?: string;
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
-export interface DemographicFilters extends AnalyticsFilters {
-  dimension?: string;
-}
 
-export interface CrossDimFilters extends AnalyticsFilters {
-  dim1?: string;
-  dim2?: string;
-}
+import {
+  DailyNutrition,
+  FoodPopularity,
+  MealPatterns,
+  Sustainability,
+  MealClassification,
+  MealRecord,
+  DemographicNutrition,
+  DemographicClassification,
+  DemographicPatterns,
+  CrossDimNutrition,
+  CrossDimClassification,
+  CrossDimPatterns,
+  AnalyticsSummary,
+} from "./types";
 
-function buildParams(
-  filters: Record<string, string | undefined>,
-): URLSearchParams {
+// ...types moved to analytics-types.ts
+
+
+function buildParams(filters: Record<string, string | undefined>): URLSearchParams {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
-    if (value) params.set(key, value);
+    if (value !== undefined && value !== null && value !== "") {
+      params.set(key, value);
+    }
   }
   return params;
 }
 
+
+/**
+ * Generic GET request for analytics API
+ * @param path API endpoint path
+ * @param params Optional URLSearchParams
+ */
 async function get<T>(path: string, params?: URLSearchParams): Promise<T> {
   const url = `${API_BASE}${path}${params?.toString() ? `?${params}` : ""}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
+  if (!res.ok) {
+    let errorText = "";
+    try {
+      errorText = await res.text();
+    } catch {}
+    throw new Error(`API ${res.status}: ${res.statusText}${errorText ? ` - ${errorText}` : ""}`);
+  }
   return res.json() as Promise<T>;
+}
+
+/**
+ * Factory for API methods
+ */
+function createApiMethod<T>(path: string) {
+  return (filters: Record<string, string | undefined> = {}) =>
+    get<T>(path, buildParams(filters));
 }
 
 // ── Standard aggregates ─────────────────────────────────────
 
-export interface DailyNutrition {
-  id: string;
-  date: string;
-  typeOfMeal: string;
-  userCount: number;
-  mealCount: number;
-  avgCalories: number | null;
-  avgProteins: number | null;
-  avgFat: number | null;
-  avgCarbs: number | null;
-  avgFiber: number | null;
-  avgSodium: number | null;
-  avgSugar: number | null;
-  avgSaturatedFat: number | null;
-  p25Calories: number | null;
-  p50Calories: number | null;
-  p75Calories: number | null;
-}
+// ...types moved to analytics-types.ts
 
-export interface FoodPopularity {
-  id: string;
-  date: string;
-  foodName: string;
-  foodGroup: string | null;
-  itemType: string;
-  frequency: number;
-  uniqueUsers: number;
-  avgQuantity: number;
-  predominantUnit: string;
-}
+// ...types moved to analytics-types.ts
 
-export interface MealPatterns {
-  id: string;
-  date: string;
-  typeOfMeal: string;
-  userCount: number;
-  totalMeals: number;
-  mealsFromPantryCount: number;
-  mealsFromPantryPct: number;
-  mealsEatenOutCount: number;
-  mealsEatenOutPct: number;
-  avgItemsPerMeal: number;
-  avgMealHour: number | null;
-  mealHourStdDev: number | null;
-}
+// ...types moved to analytics-types.ts
 
-export interface Sustainability {
-  id: string;
-  date: string;
-  typeOfMeal: string;
-  userCount: number;
-  avgSustainabilityScore: number | null;
-  avgCarbonFootprint: number | null;
-  nutriScoreDistribution: Record<string, number> | null;
-  ecoScoreDistribution: Record<string, number> | null;
-}
+// ...types moved to analytics-types.ts
 
-export interface MealClassification {
-  id: string;
-  date: string;
-  typeOfMeal: string;
-  userCount: number;
-  totalMeals: number;
-  vegetarianCount: number;
-  vegetarianPct: number;
-  veganCount: number;
-  veganPct: number;
-  avgUltraProcessedPct: number | null;
-  p25UltraProcessedPct: number | null;
-  p50UltraProcessedPct: number | null;
-  p75UltraProcessedPct: number | null;
-  novaDistribution: Record<string, number> | null;
-}
+// ...types moved to analytics-types.ts
 
-export interface MealRecord {
-  id: string;
-  weeksSinceRegistration: number;
-  typeOfMeal: string;
-  totalCalories: number | null;
-  totalProteins: number | null;
-  totalFat: number | null;
-  totalCarbs: number | null;
-  totalFiber: number | null;
-  totalSodium: number | null;
-  totalSugar: number | null;
-  totalSaturatedFat: number | null;
-  nutriScoreGrade: string | null;
-  ecoScoreGrade: string | null;
-  novaGroupMode: number | null;
-  ultraProcessedPct: number | null;
-  sustainabilityScore: number | null;
-  totalCarbonFootprint: number | null;
-  isVegetarian: boolean;
-  isVegan: boolean;
-  itemCount: number;
-}
+// ...types moved to analytics-types.ts
 
 // ── Demographic ─────────────────────────────────────────────
 
-export interface DemographicNutrition extends DailyNutrition {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
-}
+// ...types moved to analytics-types.ts
 
-export interface DemographicClassification extends MealClassification {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
-}
+// ...types moved to analytics-types.ts
 
-export interface DemographicPatterns extends MealPatterns {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
-}
+// ...types moved to analytics-types.ts
 
 // ── Cross-dimensional ───────────────────────────────────────
 
-export interface CrossDimNutrition extends Omit<DailyNutrition, "date"> {
-  date: string;
-  dim1Name: string;
-  dim1Value: string;
-  dim2Name: string;
-  dim2Value: string;
-}
+// ...types moved to analytics-types.ts
 
-export interface CrossDimClassification extends Omit<
-  MealClassification,
-  "date"
-> {
-  date: string;
-  dim1Name: string;
-  dim1Value: string;
-  dim2Name: string;
-  dim2Value: string;
-}
+// ...types moved to analytics-types.ts
 
-export interface CrossDimPatterns extends Omit<MealPatterns, "date"> {
-  date: string;
-  dim1Name: string;
-  dim1Value: string;
-  dim2Name: string;
-  dim2Value: string;
-}
+// ...types moved to analytics-types.ts
 
 // ── Summary ─────────────────────────────────────────────────
 
-export interface AnalyticsSummary {
-  period: { from: string | null; to: string | null };
-  nutrition: {
-    dataPoints: number;
-    latestAvgCalories: number | null;
-    latestAvgProteins: number | null;
-    latestAvgFat: number | null;
-    latestAvgCarbs: number | null;
-  };
-  topFoods: { name: string; frequency: number; uniqueUsers: number }[];
-  mealPatterns: {
-    dataPoints: number;
-    avgPantryUsagePct: number | null;
-    avgItemsPerMeal: number | null;
-  };
-  sustainability: {
-    dataPoints: number;
-    avgSustainabilityScore: number | null;
-  };
-  classification: {
-    dataPoints: number;
-    avgVegetarianPct: number | null;
-    avgVeganPct: number | null;
-    avgUltraProcessedPct: number | null;
-  };
-}
+// ...types moved to analytics-types.ts
 
 // ── Fetch functions ─────────────────────────────────────────
 
+
 export const analyticsApi = {
-  nutrition(f: AnalyticsFilters = {}) {
-    return get<DailyNutrition[]>(
-      "/analytics/meal-log/public/nutrition",
-      buildParams({ ...f }),
-    );
-  },
-  foodPopularity(f: AnalyticsFilters & { limit?: string } = {}) {
-    return get<FoodPopularity[]>(
-      "/analytics/meal-log/public/food-popularity",
-      buildParams({ ...f }),
-    );
-  },
-  mealPatterns(f: AnalyticsFilters = {}) {
-    return get<MealPatterns[]>(
-      "/analytics/meal-log/public/patterns",
-      buildParams({ ...f }),
-    );
-  },
-  sustainability(f: AnalyticsFilters = {}) {
-    return get<Sustainability[]>(
-      "/analytics/meal-log/public/sustainability",
-      buildParams({ ...f }),
-    );
-  },
-  mealClassification(f: AnalyticsFilters = {}) {
-    return get<MealClassification[]>(
-      "/analytics/meal-log/public/classification",
-      buildParams({ ...f }),
-    );
-  },
-  mealRecords(f: AnalyticsFilters = {}) {
-    return get<MealRecord[]>(
-      "/analytics/meal-log/public/records",
-      buildParams({ ...f }),
-    );
-  },
-  demographicNutrition(f: DemographicFilters = {}) {
-    return get<DemographicNutrition[]>(
-      "/analytics/meal-log/public/demographic/nutrition",
-      buildParams({ ...f }),
-    );
-  },
-  demographicClassification(f: DemographicFilters = {}) {
-    return get<DemographicClassification[]>(
-      "/analytics/meal-log/public/demographic/classification",
-      buildParams({ ...f }),
-    );
-  },
-  demographicPatterns(f: DemographicFilters = {}) {
-    return get<DemographicPatterns[]>(
-      "/analytics/meal-log/public/demographic/patterns",
-      buildParams({ ...f }),
-    );
-  },
-  crossDimNutrition(f: CrossDimFilters = {}) {
-    return get<CrossDimNutrition[]>(
-      "/analytics/meal-log/public/cross-dim/nutrition",
-      buildParams({ ...f }),
-    );
-  },
-  crossDimClassification(f: CrossDimFilters = {}) {
-    return get<CrossDimClassification[]>(
-      "/analytics/meal-log/public/cross-dim/classification",
-      buildParams({ ...f }),
-    );
-  },
-  crossDimPatterns(f: CrossDimFilters = {}) {
-    return get<CrossDimPatterns[]>(
-      "/analytics/meal-log/public/cross-dim/patterns",
-      buildParams({ ...f }),
-    );
-  },
-  summary(f: Pick<AnalyticsFilters, "from" | "to"> = {}) {
-    return get<AnalyticsSummary>(
-      "/analytics/meal-log/public/summary",
-      buildParams({ ...f }),
-    );
-  },
+  nutrition: createApiMethod<DailyNutrition[]>("/analytics/meal-log/public/nutrition"),
+  foodPopularity: createApiMethod<FoodPopularity[]>("/analytics/meal-log/public/food-popularity"),
+  mealPatterns: createApiMethod<MealPatterns[]>("/analytics/meal-log/public/patterns"),
+  sustainability: createApiMethod<Sustainability[]>("/analytics/meal-log/public/sustainability"),
+  mealClassification: createApiMethod<MealClassification[]>("/analytics/meal-log/public/classification"),
+  mealRecords: createApiMethod<MealRecord[]>("/analytics/meal-log/public/records"),
+  demographicNutrition: createApiMethod<DemographicNutrition[]>("/analytics/meal-log/public/demographic/nutrition"),
+  demographicClassification: createApiMethod<DemographicClassification[]>("/analytics/meal-log/public/demographic/classification"),
+  demographicPatterns: createApiMethod<DemographicPatterns[]>("/analytics/meal-log/public/demographic/patterns"),
+  crossDimNutrition: createApiMethod<CrossDimNutrition[]>("/analytics/meal-log/public/cross-dim/nutrition"),
+  crossDimClassification: createApiMethod<CrossDimClassification[]>("/analytics/meal-log/public/cross-dim/classification"),
+  crossDimPatterns: createApiMethod<CrossDimPatterns[]>("/analytics/meal-log/public/cross-dim/patterns"),
+  summary: createApiMethod<AnalyticsSummary>("/analytics/meal-log/public/summary"),
 };
 
 // ── Constants ───────────────────────────────────────────────
 
-export const MEAL_TYPES = [
-  "BREAKFAST",
-  "LUNCH",
-  "DINNER",
-  "SNACK",
-  "SPECIAL_DRINKS",
-] as const;
 
-export const DIMENSIONS = [
-  "ageGroup",
-  "gender",
-  "educationLevel",
-  "region",
-  "country",
-] as const;
-
-export const DIMENSION_LABELS: Record<string, string> = {
-  ageGroup: "Age Group",
-  gender: "Gender",
-  educationLevel: "Education Level",
-  region: "Region",
-  country: "Country",
-};
+// ...constants moved to analytics-constants.ts
