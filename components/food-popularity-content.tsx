@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ScatterChart, Scatter, ZAxis, Tooltip, Cell } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import { type FoodPopularity } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -140,45 +141,17 @@ export function FoodPopularityContent() {
       ) : (
         <>
           {/* Top Foods Horizontal Bar */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top 20 Most Consumed Foods</CardTitle>
-              <CardDescription>
-                Ranked by total consumption frequency (≥5 unique users each)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  frequency: {
-                    label: "Frequency",
-                    color: "var(--chart-1)",
-                  },
-                }}
-                className="h-[600px]"
-              >
-                <BarChart data={topFoods} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    dataKey="foodName"
-                    type="category"
-                    width={160}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="frequency"
-                    fill="var(--chart-1)"
-                    radius={[0, 4, 4, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-            <CardFooter className="text-xs text-muted-foreground">
-              Only foods consumed by ≥5 unique users are shown
-            </CardFooter>
-          </Card>
+          <HorizontalBarChartCard
+            title="Top 20 Most Consumed Foods"
+            description="Ranked by total consumption frequency (≥5 unique users each)"
+            config={{ frequency: { label: "Frequency", color: "var(--chart-1)" } }}
+            data={topFoods as unknown as Record<string, unknown>[]}
+            bars={[{ dataKey: "frequency", fill: "var(--chart-1)" }]}
+            yAxisKey="foodName"
+            yAxisWidth={160}
+            height="h-[600px]"
+            footer="Only foods consumed by ≥5 unique users are shown"
+          />
 
           {/* Average Quantity per Food */}
           {quantityData.length > 0 && (
@@ -322,42 +295,16 @@ export function FoodPopularityContent() {
           </Card>
 
           {/* Unique Users per Food */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Unique Users per Top Food</CardTitle>
-              <CardDescription>
-                Number of distinct users who consumed each food
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  uniqueUsers: {
-                    label: "Unique Users",
-                    color: "var(--chart-3)",
-                  },
-                }}
-                className="h-[400px]"
-              >
-                <BarChart data={topFoods.slice(0, 15)} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    dataKey="foodName"
-                    type="category"
-                    width={160}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="uniqueUsers"
-                    fill="var(--chart-3)"
-                    radius={[0, 4, 4, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <HorizontalBarChartCard
+            title="Unique Users per Top Food"
+            description="Number of distinct users who consumed each food"
+            config={{ uniqueUsers: { label: "Unique Users", color: "var(--chart-3)" } }}
+            data={topFoods.slice(0, 15) as unknown as Record<string, unknown>[]}
+            bars={[{ dataKey: "uniqueUsers", fill: "var(--chart-3)" }]}
+            yAxisKey="foodName"
+            yAxisWidth={160}
+            height="h-[400px]"
+          />
         </>
       )}
     </div>

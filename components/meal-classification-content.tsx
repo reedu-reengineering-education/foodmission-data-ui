@@ -26,6 +26,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import { type MealClassification, type DemographicClassification } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
@@ -376,113 +377,45 @@ export function MealClassificationContent() {
             )}
 
             {/* By Meal Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Classification by Meal Type</CardTitle>
-                <CardDescription>
-                  Vegetarian/vegan % by meal type
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    vegetarianPct: {
-                      label: "Vegetarian %",
-                      color: "var(--chart-1)",
-                    },
-                    veganPct: {
-                      label: "Vegan %",
-                      color: "var(--chart-2)",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <BarChart data={mealTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="vegetarianPct"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="veganPct"
-                      fill="var(--chart-2)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <BarChartCard
+              title="Classification by Meal Type"
+              description="Vegetarian/vegan % by meal type"
+              config={{
+                vegetarianPct: { label: "Vegetarian %", color: "var(--chart-1)" },
+                veganPct: { label: "Vegan %", color: "var(--chart-2)" },
+              }}
+              data={mealTypeData as unknown as Record<string, unknown>[]}
+              bars={[
+                { dataKey: "vegetarianPct", fill: "var(--chart-1)" },
+                { dataKey: "veganPct", fill: "var(--chart-2)" },
+              ]}
+              xAxisKey="meal"
+              showLegend
+              height="h-[300px]"
+            />
           </div>
 
           {/* Demographic Breakdown */}
           {demoChartData.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Classification by {DIMENSION_LABELS[dimension] ?? dimension}
-                </CardTitle>
-                <CardDescription>
-                  Vegetarian/vegan rates by demographic group (k≥5 anonymity)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    vegetarianPct: {
-                      label: "Vegetarian %",
-                      color: "var(--chart-1)",
-                    },
-                    veganPct: {
-                      label: "Vegan %",
-                      color: "var(--chart-2)",
-                    },
-                    ultraProcessedPct: {
-                      label: "Ultra-Processed %",
-                      color: "var(--chart-3)",
-                    },
-                  }}
-                  className="h-[350px]"
-                >
-                  <BarChart data={demoChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
-                      label={{
-                        value: "%",
-                        angle: -90,
-                        position: "insideLeft",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="vegetarianPct"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="veganPct"
-                      fill="var(--chart-2)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="ultraProcessedPct"
-                      fill="var(--chart-3)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Groups with fewer than 5 users are suppressed for privacy
-              </CardFooter>
-            </Card>
+            <BarChartCard
+              title={`Classification by ${DIMENSION_LABELS[dimension] ?? dimension}`}
+              description="Vegetarian/vegan rates by demographic group (k≥5 anonymity)"
+              config={{
+                vegetarianPct: { label: "Vegetarian %", color: "var(--chart-1)" },
+                veganPct: { label: "Vegan %", color: "var(--chart-2)" },
+                ultraProcessedPct: { label: "Ultra-Processed %", color: "var(--chart-3)" },
+              }}
+              data={demoChartData as unknown as Record<string, unknown>[]}
+              bars={[
+                { dataKey: "vegetarianPct", fill: "var(--chart-1)" },
+                { dataKey: "veganPct", fill: "var(--chart-2)" },
+                { dataKey: "ultraProcessedPct", fill: "var(--chart-3)" },
+              ]}
+              xAxisKey="label"
+              yAxisLabel="%"
+              showLegend
+              footer="Groups with fewer than 5 users are suppressed for privacy"
+            />
           )}
         </>
       )}

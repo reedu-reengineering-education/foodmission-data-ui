@@ -17,17 +17,15 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import {
-  Bar,
-  BarChart,
   Line,
   LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
-  Area,
-  AreaChart,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
+import { AreaChartCard } from "@/components/ui/area-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import { type DailyNutrition, type DemographicNutrition } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
@@ -258,56 +256,15 @@ export function NutritionAnalyticsContent() {
       ) : (
         <>
           {/* Calorie Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Daily Average Calorie Trend</CardTitle>
-              <CardDescription>
-                Weighted average calories per meal across all users over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  avgCalories: {
-                    label: "Avg Calories",
-                    color: "var(--chart-1)",
-                  },
-                }}
-                className="h-[350px] w-full aspect-auto"
-              >
-                <AreaChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 11 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11 }}
-                    label={{
-                      value: "kcal",
-                      angle: -90,
-                      position: "insideLeft",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    type="monotone"
-                    dataKey="avgCalories"
-                    stroke="var(--chart-1)"
-                    fill="var(--chart-1)"
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-            <CardFooter className="text-xs text-muted-foreground">
-              {trendData.length} data points ·{" "}
-              {data.reduce((s, d) => s + d.mealCount, 0)} total meals
-            </CardFooter>
-          </Card>
+          <AreaChartCard
+            title="Daily Average Calorie Trend"
+            description="Weighted average calories per meal across all users over time"
+            config={{ avgCalories: { label: "Avg Calories", color: "var(--chart-1)" } }}
+            data={trendData as unknown as Record<string, unknown>[]}
+            areas={[{ dataKey: "avgCalories", stroke: "var(--chart-1)", fill: "var(--chart-1)", fillOpacity: 0.3 }]}
+            yAxisLabel="kcal"
+            footer={`${trendData.length} data points · ${data.reduce((s, d) => s + d.mealCount, 0)} total meals`}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Macronutrient Trend */}
@@ -369,37 +326,14 @@ export function NutritionAnalyticsContent() {
           </Card>
 
           {/* By Meal Type */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Nutrition by Meal Type</CardTitle>
-              <CardDescription>
-                Average calories per meal type
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  avgCalories: {
-                    label: "Avg Calories",
-                    color: "var(--chart-1)",
-                  },
-                }}
-                className="h-[350px] w-full aspect-auto"
-              >
-                <BarChart data={mealTypeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    dataKey="avgCalories"
-                    fill="var(--chart-1)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <BarChartCard
+            title="Nutrition by Meal Type"
+            description="Average calories per meal type"
+            config={{ avgCalories: { label: "Avg Calories", color: "var(--chart-1)" } }}
+            data={mealTypeData as unknown as Record<string, unknown>[]}
+            bars={[{ dataKey: "avgCalories", fill: "var(--chart-1)" }]}
+            xAxisKey="meal"
+          />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -464,65 +398,26 @@ export function NutritionAnalyticsContent() {
 
             {/* Demographic Breakdown */}
             {demoChartData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Nutrition by{" "}
-                    {DIMENSION_LABELS[demoDimension] ?? demoDimension}
-                  </CardTitle>
-                  <CardDescription>
-                    Average calories per demographic group (k≥5 anonymity)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      avgCalories: {
-                        label: "Avg Calories",
-                        color: "var(--chart-1)",
-                      },
-                      avgProteins: {
-                        label: "Protein (g)",
-                        color: "var(--chart-2)",
-                      },
-                      avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
-                      avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
-                    }}
-                    className="h-[350px] w-full aspect-auto"
-                  >
-                    <BarChart data={demoChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend content={<ChartLegendContent />} />
-                      <Bar
-                        dataKey="avgCalories"
-                        fill="var(--chart-1)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="avgProteins"
-                        fill="var(--chart-2)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="avgFat"
-                        fill="var(--chart-3)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="avgCarbs"
-                        fill="var(--chart-4)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-                <CardFooter className="text-xs text-muted-foreground">
-                  Groups with fewer than 5 users are suppressed for privacy
-                </CardFooter>
-              </Card>
+              <BarChartCard
+                title={`Nutrition by ${DIMENSION_LABELS[demoDimension] ?? demoDimension}`}
+                description="Average calories per demographic group (k≥5 anonymity)"
+                config={{
+                  avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
+                  avgProteins: { label: "Protein (g)", color: "var(--chart-2)" },
+                  avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
+                  avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
+                }}
+                data={demoChartData as unknown as Record<string, unknown>[]}
+                bars={[
+                  { dataKey: "avgCalories", fill: "var(--chart-1)" },
+                  { dataKey: "avgProteins", fill: "var(--chart-2)" },
+                  { dataKey: "avgFat", fill: "var(--chart-3)" },
+                  { dataKey: "avgCarbs", fill: "var(--chart-4)" },
+                ]}
+                xAxisKey="label"
+                showLegend
+                footer="Groups with fewer than 5 users are suppressed for privacy"
+              />
             )}
           </div>
         </>

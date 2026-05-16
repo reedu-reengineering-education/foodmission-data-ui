@@ -9,21 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Utensils, Flame, Globe } from "lucide-react";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
-  Bar,
-  BarChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
 import { Map } from "@/components/ui/map";
 import { CountryChoropleth } from "@/components/country-choropleth";
 import { PieChartCard } from "@/components/ui/pie-chart-card";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
+import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { DIMENSION_LABELS } from "@/lib/constants";
 
@@ -112,26 +102,17 @@ function MapSection({
         </Map>
       </Card>
 
-      <Card className="md:col-span-3">
-        <CardHeader>
-          <CardTitle>Users by Country</CardTitle>
-          <CardDescription>Max concurrent users per country</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer
-            config={{ users: { label: "Users", color: "var(--chart-1)" } }}
-            className="h-[300px]"
-          >
-            <BarChart data={countryChoro} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis dataKey="country" type="category" width={100} tick={{ fontSize: 11 }} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="users" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <HorizontalBarChartCard
+        title="Users by Country"
+        description="Max concurrent users per country"
+        config={{ users: { label: "Users", color: "var(--chart-1)" } }}
+        data={countryChoro as unknown as Record<string, unknown>[]}
+        bars={[{ dataKey: "users", fill: "var(--chart-1)" }]}
+        yAxisKey="country"
+        yAxisWidth={100}
+        height="h-[300px]"
+        className="md:col-span-3"
+      />
     </div>
   );
 }
@@ -157,26 +138,15 @@ function MealTypeSection({
         footer={`${totalMeals.toLocaleString()} meals total`}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Meal Count Breakdown</CardTitle>
-          <CardDescription>Exact counts per meal type</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer
-            config={{ count: { label: "Meals", color: "var(--chart-2)" } }}
-            className="h-[300px]"
-          >
-            <BarChart data={mealTypeChart}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="type" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="count" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <BarChartCard
+        title="Meal Count Breakdown"
+        description="Exact counts per meal type"
+        config={{ count: { label: "Meals", color: "var(--chart-2)" } }}
+        data={mealTypeChart as unknown as Record<string, unknown>[]}
+        bars={[{ dataKey: "count", fill: "var(--chart-2)" }]}
+        xAxisKey="type"
+        height="h-[300px]"
+      />
     </div>
   );
 }
@@ -197,26 +167,15 @@ function DemographicsSection({
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         {ageChart.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{DIMENSION_LABELS.ageGroup}</CardTitle>
-              <CardDescription>Users per age group</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{ users: { label: "Users", color: "var(--chart-3)" } }}
-                className="h-[250px]"
-              >
-                <BarChart data={ageChart}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="users" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <BarChartCard
+            title={DIMENSION_LABELS.ageGroup}
+            description="Users per age group"
+            config={{ users: { label: "Users", color: "var(--chart-3)" } }}
+            data={ageChart as unknown as Record<string, unknown>[]}
+            bars={[{ dataKey: "users", fill: "var(--chart-3)" }]}
+            xAxisKey="label"
+            height="h-[250px]"
+          />
         )}
 
         {genderChart.length > 0 && (
@@ -233,31 +192,16 @@ function DemographicsSection({
         )}
 
         {educationChart.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{DIMENSION_LABELS.educationLevel}</CardTitle>
-              <CardDescription>Users per education level</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{ users: { label: "Users", color: "var(--chart-4)" } }}
-                className="h-[250px]"
-              >
-                <BarChart data={educationChart} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    dataKey="label"
-                    type="category"
-                    width={120}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="users" fill="var(--chart-4)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <HorizontalBarChartCard
+            title={DIMENSION_LABELS.educationLevel}
+            description="Users per education level"
+            config={{ users: { label: "Users", color: "var(--chart-4)" } }}
+            data={educationChart as unknown as Record<string, unknown>[]}
+            bars={[{ dataKey: "users", fill: "var(--chart-4)" }]}
+            yAxisKey="label"
+            yAxisWidth={120}
+            height="h-[250px]"
+          />
         )}
       </div>
     </>

@@ -1,23 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from "@/components/ui/chart";
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import {
   type CrossDimNutrition,
@@ -204,231 +189,90 @@ export function DemographicInsightsContent() {
         <>
           {/* Cross-dim Nutrition */}
           {nutritionChart.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Nutrition by {crossLabel}</CardTitle>
-                <CardDescription>
-                  Average calories for each {dim1Label}/{dim2Label} combination
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgCalories: {
-                      label: "Avg Calories",
-                      color: "var(--chart-1)",
-                    },
-                    avgProteins: {
-                      label: "Protein (g)",
-                      color: "var(--chart-2)",
-                    },
-                    avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
-                    avgCarbs: {
-                      label: "Carbs (g)",
-                      color: "var(--chart-4)",
-                    },
-                  }}
-                  className="h-[400px]"
-                >
-                  <BarChart
-                    data={nutritionChart}
-                    layout="vertical"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      dataKey="label"
-                      type="category"
-                      width={180}
-                      tick={{ fontSize: 10 }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="avgCalories"
-                      fill="var(--chart-1)"
-                      radius={[0, 4, 4, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Cross-dimensional groups with &lt;20 users suppressed for
-                privacy
-              </CardFooter>
-            </Card>
+            <HorizontalBarChartCard
+              title={`Nutrition by ${crossLabel}`}
+              description={`Average calories for each ${dim1Label}/${dim2Label} combination`}
+              config={{
+                avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
+                avgProteins: { label: "Protein (g)", color: "var(--chart-2)" },
+                avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
+                avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
+              }}
+              data={nutritionChart as unknown as Record<string, unknown>[]}
+              bars={[{ dataKey: "avgCalories", fill: "var(--chart-1)" }]}
+              yAxisKey="label"
+              yAxisWidth={180}
+              height="h-[400px]"
+              showLegend
+              footer="Cross-dimensional groups with <20 users suppressed for privacy"
+            />
           )}
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Cross-dim Classification */}
             {classChart.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Classification by {crossLabel}
-                  </CardTitle>
-                  <CardDescription>
-                    Vegetarian/vegan % per group
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      vegetarianPct: {
-                        label: "Vegetarian %",
-                        color: "var(--chart-1)",
-                      },
-                      veganPct: {
-                        label: "Vegan %",
-                        color: "var(--chart-2)",
-                      },
-                    }}
-                    className="h-[350px]"
-                  >
-                    <BarChart data={classChart} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tick={{ fontSize: 11 }} />
-                      <YAxis
-                        dataKey="label"
-                        type="category"
-                        width={160}
-                        tick={{ fontSize: 10 }}
-                      />
-                      <ChartTooltip
-                        content={<ChartTooltipContent />}
-                      />
-                      <ChartLegend
-                        content={<ChartLegendContent />}
-                      />
-                      <Bar
-                        dataKey="vegetarianPct"
-                        fill="var(--chart-1)"
-                        radius={[0, 4, 4, 0]}
-                      />
-                      <Bar
-                        dataKey="veganPct"
-                        fill="var(--chart-2)"
-                        radius={[0, 4, 4, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+              <HorizontalBarChartCard
+                title={`Classification by ${crossLabel}`}
+                description="Vegetarian/vegan % per group"
+                config={{
+                  vegetarianPct: { label: "Vegetarian %", color: "var(--chart-1)" },
+                  veganPct: { label: "Vegan %", color: "var(--chart-2)" },
+                }}
+                data={classChart as unknown as Record<string, unknown>[]}
+                bars={[
+                  { dataKey: "vegetarianPct", fill: "var(--chart-1)" },
+                  { dataKey: "veganPct", fill: "var(--chart-2)" },
+                ]}
+                yAxisKey="label"
+                yAxisWidth={160}
+                height="h-[350px]"
+                showLegend
+              />
             )}
 
             {/* Cross-dim Patterns */}
             {patternChart.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Patterns by {crossLabel}</CardTitle>
-                  <CardDescription>
-                    Pantry usage &amp; eating out % per group
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      pantryPct: {
-                        label: "Pantry %",
-                        color: "var(--chart-1)",
-                      },
-                      eatenOutPct: {
-                        label: "Eaten Out %",
-                        color: "var(--chart-3)",
-                      },
-                    }}
-                    className="h-[350px]"
-                  >
-                    <BarChart data={patternChart} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tick={{ fontSize: 11 }} />
-                      <YAxis
-                        dataKey="label"
-                        type="category"
-                        width={160}
-                        tick={{ fontSize: 10 }}
-                      />
-                      <ChartTooltip
-                        content={<ChartTooltipContent />}
-                      />
-                      <ChartLegend
-                        content={<ChartLegendContent />}
-                      />
-                      <Bar
-                        dataKey="pantryPct"
-                        fill="var(--chart-1)"
-                        radius={[0, 4, 4, 0]}
-                      />
-                      <Bar
-                        dataKey="eatenOutPct"
-                        fill="var(--chart-3)"
-                        radius={[0, 4, 4, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+              <HorizontalBarChartCard
+                title={`Patterns by ${crossLabel}`}
+                description="Pantry usage & eating out % per group"
+                config={{
+                  pantryPct: { label: "Pantry %", color: "var(--chart-1)" },
+                  eatenOutPct: { label: "Eaten Out %", color: "var(--chart-3)" },
+                }}
+                data={patternChart as unknown as Record<string, unknown>[]}
+                bars={[
+                  { dataKey: "pantryPct", fill: "var(--chart-1)" },
+                  { dataKey: "eatenOutPct", fill: "var(--chart-3)" },
+                ]}
+                yAxisKey="label"
+                yAxisWidth={160}
+                height="h-[350px]"
+                showLegend
+              />
             )}
           </div>
 
           {/* Macro comparison */}
           {nutritionChart.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Macronutrient Comparison</CardTitle>
-                <CardDescription>
-                  Protein, fat &amp; carbs (g) for each {crossLabel}{" "}
-                  combination
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgProteins: {
-                      label: "Protein (g)",
-                      color: "var(--chart-2)",
-                    },
-                    avgFat: {
-                      label: "Fat (g)",
-                      color: "var(--chart-3)",
-                    },
-                    avgCarbs: {
-                      label: "Carbs (g)",
-                      color: "var(--chart-4)",
-                    },
-                  }}
-                  className="h-[400px]"
-                >
-                  <BarChart data={nutritionChart} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      dataKey="label"
-                      type="category"
-                      width={180}
-                      tick={{ fontSize: 10 }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="avgProteins"
-                      fill="var(--chart-2)"
-                      radius={[0, 4, 4, 0]}
-                    />
-                    <Bar
-                      dataKey="avgFat"
-                      fill="var(--chart-3)"
-                      radius={[0, 4, 4, 0]}
-                    />
-                    <Bar
-                      dataKey="avgCarbs"
-                      fill="var(--chart-4)"
-                      radius={[0, 4, 4, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <HorizontalBarChartCard
+              title="Macronutrient Comparison"
+              description={`Protein, fat & carbs (g) for each ${crossLabel} combination`}
+              config={{
+                avgProteins: { label: "Protein (g)", color: "var(--chart-2)" },
+                avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
+                avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
+              }}
+              data={nutritionChart as unknown as Record<string, unknown>[]}
+              bars={[
+                { dataKey: "avgProteins", fill: "var(--chart-2)" },
+                { dataKey: "avgFat", fill: "var(--chart-3)" },
+                { dataKey: "avgCarbs", fill: "var(--chart-4)" },
+              ]}
+              yAxisKey="label"
+              yAxisWidth={180}
+              height="h-[400px]"
+              showLegend
+            />
           )}
         </>
       )}

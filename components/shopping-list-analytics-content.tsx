@@ -24,12 +24,14 @@ import {
   CartesianGrid,
   Line,
   Area,
-  AreaChart,
   ComposedChart,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { PieChartCard } from "@/components/ui/pie-chart-card";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
+import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
+import { AreaChartCard } from "@/components/ui/area-chart-card";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import {
@@ -422,86 +424,52 @@ export function ShoppingListAnalyticsContent() {
 
           {/* ── Nutrition Profile Trend ─────────────────── */}
           {nutritionTrend.length > 0 && (
-            <Card id="nutrition-profile">
-              <CardHeader>
-                <CardTitle>Nutrition Profile Trend</CardTitle>
-                <CardDescription>
-                  Average calories and macros per shopping list over time
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
-                    avgProteins: { label: "Avg Protein (g)", color: "var(--chart-2)" },
-                    avgCarbs: { label: "Avg Carbs (g)", color: "var(--chart-3)" },
-                    avgFat: { label: "Avg Fat (g)", color: "var(--chart-4)" },
-                  }}
-                  className="h-[350px] w-full aspect-auto"
-                >
-                  <AreaChart data={nutritionTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Area type="monotone" dataKey="avgCalories" stroke="var(--chart-1)" fill="var(--chart-1)" fillOpacity={0.15} />
-                    <Area type="monotone" dataKey="avgProteins" stroke="var(--chart-2)" fill="var(--chart-2)" fillOpacity={0.1} />
-                    <Area type="monotone" dataKey="avgCarbs" stroke="var(--chart-3)" fill="var(--chart-3)" fillOpacity={0.1} />
-                    <Area type="monotone" dataKey="avgFat" stroke="var(--chart-4)" fill="var(--chart-4)" fillOpacity={0.1} />
-                  </AreaChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <AreaChartCard
+              id="nutrition-profile"
+              title="Nutrition Profile Trend"
+              description="Average calories and macros per shopping list over time"
+              config={{
+                avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
+                avgProteins: { label: "Avg Protein (g)", color: "var(--chart-2)" },
+                avgCarbs: { label: "Avg Carbs (g)", color: "var(--chart-3)" },
+                avgFat: { label: "Avg Fat (g)", color: "var(--chart-4)" },
+              }}
+              data={nutritionTrend as unknown as Record<string, unknown>[]}
+              areas={[
+                { dataKey: "avgCalories", stroke: "var(--chart-1)", fill: "var(--chart-1)", fillOpacity: 0.15 },
+                { dataKey: "avgProteins", stroke: "var(--chart-2)", fill: "var(--chart-2)", fillOpacity: 0.1 },
+                { dataKey: "avgCarbs", stroke: "var(--chart-3)", fill: "var(--chart-3)", fillOpacity: 0.1 },
+                { dataKey: "avgFat", stroke: "var(--chart-4)", fill: "var(--chart-4)", fillOpacity: 0.1 },
+              ]}
+              showLegend
+            />
           )}
 
           {/* ── Sustainability Scores ──────────────────── */}
           {(nutriScoreData.length > 0 || ecoScoreData.length > 0) && (
             <div id="sustainability" className="grid gap-4 md:grid-cols-2">
               {nutriScoreData.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Nutri-Score Distribution</CardTitle>
-                    <CardDescription>Items by Nutri-Score grade (A–E)</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ChartContainer
-                      config={{ count: { label: "Items", color: "var(--chart-2)" } }}
-                      className="h-[280px]"
-                    >
-                      <BarChart data={nutriScoreData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="grade" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="count" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
+                <BarChartCard
+                  title="Nutri-Score Distribution"
+                  description="Items by Nutri-Score grade (A–E)"
+                  config={{ count: { label: "Items", color: "var(--chart-2)" } }}
+                  data={nutriScoreData as unknown as Record<string, unknown>[]}
+                  bars={[{ dataKey: "count", fill: "var(--chart-2)" }]}
+                  xAxisKey="grade"
+                  height="h-[280px]"
+                />
               )}
 
               {ecoScoreData.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Eco-Score Distribution</CardTitle>
-                    <CardDescription>Items by Eco-Score grade (A–E)</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ChartContainer
-                      config={{ count: { label: "Items", color: "var(--chart-4)" } }}
-                      className="h-[280px]"
-                    >
-                      <BarChart data={ecoScoreData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="grade" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="count" fill="var(--chart-4)" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
+                <BarChartCard
+                  title="Eco-Score Distribution"
+                  description="Items by Eco-Score grade (A–E)"
+                  config={{ count: { label: "Items", color: "var(--chart-4)" } }}
+                  data={ecoScoreData as unknown as Record<string, unknown>[]}
+                  bars={[{ dataKey: "count", fill: "var(--chart-4)" }]}
+                  xAxisKey="grade"
+                  height="h-[280px]"
+                />
               )}
             </div>
           )}
@@ -516,53 +484,29 @@ export function ShoppingListAnalyticsContent() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {demoPatternsByDim.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>List Patterns by {DIMENSION_LABELS[dimension as keyof typeof DIMENSION_LABELS] ?? dimension}</CardTitle>
-                      <CardDescription>Avg items per list and total lists</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={{
-                          avgItemsPerList: { label: "Avg Items / List", color: "var(--chart-1)" },
-                        }}
-                        className="h-[300px]"
-                      >
-                        <BarChart data={demoPatternsByDim} layout="vertical">
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" tick={{ fontSize: 11 }} />
-                          <YAxis dataKey="label" type="category" width={120} tick={{ fontSize: 10 }} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="avgItemsPerList" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
+                  <HorizontalBarChartCard
+                    title={`List Patterns by ${DIMENSION_LABELS[dimension as keyof typeof DIMENSION_LABELS] ?? dimension}`}
+                    description="Avg items per list and total lists"
+                    config={{ avgItemsPerList: { label: "Avg Items / List", color: "var(--chart-1)" } }}
+                    data={demoPatternsByDim as unknown as Record<string, unknown>[]}
+                    bars={[{ dataKey: "avgItemsPerList", fill: "var(--chart-1)" }]}
+                    yAxisKey="label"
+                    yAxisWidth={120}
+                    height="h-[300px]"
+                  />
                 )}
 
                 {demoNutritionByDim.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Avg Calories by {DIMENSION_LABELS[dimension as keyof typeof DIMENSION_LABELS] ?? dimension}</CardTitle>
-                      <CardDescription>Average planned calorie intake per list</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer
-                        config={{
-                          avgCalories: { label: "Avg Calories", color: "var(--chart-3)" },
-                        }}
-                        className="h-[300px]"
-                      >
-                        <BarChart data={demoNutritionByDim} layout="vertical">
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" tick={{ fontSize: 11 }} />
-                          <YAxis dataKey="label" type="category" width={120} tick={{ fontSize: 10 }} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="avgCalories" fill="var(--chart-3)" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
+                  <HorizontalBarChartCard
+                    title={`Avg Calories by ${DIMENSION_LABELS[dimension as keyof typeof DIMENSION_LABELS] ?? dimension}`}
+                    description="Average planned calorie intake per list"
+                    config={{ avgCalories: { label: "Avg Calories", color: "var(--chart-3)" } }}
+                    data={demoNutritionByDim as unknown as Record<string, unknown>[]}
+                    bars={[{ dataKey: "avgCalories", fill: "var(--chart-3)" }]}
+                    yAxisKey="label"
+                    yAxisWidth={120}
+                    height="h-[300px]"
+                  />
                 )}
               </div>
             </div>

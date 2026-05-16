@@ -17,17 +17,16 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import {
-  Bar,
-  BarChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Area,
-  AreaChart,
   ComposedChart,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
+import { AreaChartCard } from "@/components/ui/area-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import { type MealPatterns } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -248,216 +247,72 @@ export function MealPatternsContent() {
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Items per Meal Trend */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Average Items per Meal</CardTitle>
-                <CardDescription>
-                  Number of food items per meal over time
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgItemsPerMeal: {
-                      label: "Items/Meal",
-                      color: "var(--chart-4)",
-                    },
-                  }}
-                  className="h-[350px]"
-                >
-                  <AreaChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 10 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area
-                      type="monotone"
-                      dataKey="avgItemsPerMeal"
-                      stroke="var(--chart-4)"
-                      fill="var(--chart-4)"
-                      fillOpacity={0.3}
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <AreaChartCard
+              title="Average Items per Meal"
+              description="Number of food items per meal over time"
+              config={{ avgItemsPerMeal: { label: "Items/Meal", color: "var(--chart-4)" } }}
+              data={trendData as unknown as Record<string, unknown>[]}
+              areas={[{ dataKey: "avgItemsPerMeal", stroke: "var(--chart-4)", fill: "var(--chart-4)", fillOpacity: 0.3 }]}
+            />
 
             {/* By Meal Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Patterns by Meal Type</CardTitle>
-                <CardDescription>
-                  Pantry % and eating out % by meal type
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    pantryPct: {
-                      label: "Pantry %",
-                      color: "var(--chart-1)",
-                    },
-                    eatenOutPct: {
-                      label: "Eaten Out %",
-                      color: "var(--chart-3)",
-                    },
-                  }}
-                  className="h-[350px]"
-                >
-                  <BarChart data={mealTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="pantryPct"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="eatenOutPct"
-                      fill="var(--chart-3)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <BarChartCard
+              title="Patterns by Meal Type"
+              description="Pantry % and eating out % by meal type"
+              config={{
+                pantryPct: { label: "Pantry %", color: "var(--chart-1)" },
+                eatenOutPct: { label: "Eaten Out %", color: "var(--chart-3)" },
+              }}
+              data={mealTypeData as unknown as Record<string, unknown>[]}
+              bars={[
+                { dataKey: "pantryPct", fill: "var(--chart-1)" },
+                { dataKey: "eatenOutPct", fill: "var(--chart-3)" },
+              ]}
+              xAxisKey="meal"
+              showLegend
+            />
           </div>
 
           {/* Total Meals Over Time */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Meals Over Time</CardTitle>
-              <CardDescription>
-                Daily meal logging volume — spot weekday/weekend patterns and
-                growth
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  totalMeals: {
-                    label: "Total Meals",
-                    color: "var(--chart-5)",
-                  },
-                }}
-                className="h-[300px] w-full aspect-auto"
-              >
-                <AreaChart data={totalMealsTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    type="monotone"
-                    dataKey="totalMeals"
-                    stroke="var(--chart-5)"
-                    fill="var(--chart-5)"
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <AreaChartCard
+            title="Total Meals Over Time"
+            description="Daily meal logging volume — spot weekday/weekend patterns and growth"
+            config={{ totalMeals: { label: "Total Meals", color: "var(--chart-5)" } }}
+            data={totalMealsTrend as unknown as Record<string, unknown>[]}
+            areas={[{ dataKey: "totalMeals", stroke: "var(--chart-5)", fill: "var(--chart-5)", fillOpacity: 0.3 }]}
+            height="h-[300px] w-full aspect-auto"
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Meal Volume by Type (stacked area) */}
             {mealVolumeByType.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Meal Volume by Type</CardTitle>
-                  <CardDescription>
-                    How total meals break down across meal types over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={Object.fromEntries(
-                      mealTypeKeys.map((mt, i) => [
-                        mt,
-                        {
-                          label: mt,
-                          color: `var(--chart-${(i % 5) + 1})`,
-                        },
-                      ]),
-                    )}
-                    className="h-[350px] w-full aspect-auto"
-                  >
-                    <AreaChart data={mealVolumeByType}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 10 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend content={<ChartLegendContent />} />
-                      {mealTypeKeys.map((mt, i) => (
-                        <Area
-                          key={mt}
-                          type="monotone"
-                          dataKey={mt}
-                          stackId="1"
-                          stroke={`var(--chart-${(i % 5) + 1})`}
-                          fill={`var(--chart-${(i % 5) + 1})`}
-                          fillOpacity={0.4}
-                        />
-                      ))}
-                    </AreaChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+              <AreaChartCard
+                title="Meal Volume by Type"
+                description="How total meals break down across meal types over time"
+                config={Object.fromEntries(
+                  mealTypeKeys.map((mt, i) => [mt, { label: mt, color: `var(--chart-${(i % 5) + 1})` }])
+                )}
+                data={mealVolumeByType as unknown as Record<string, unknown>[]}
+                areas={mealTypeKeys.map((mt, i) => ({
+                  dataKey: mt,
+                  stroke: `var(--chart-${(i % 5) + 1})`,
+                  fill: `var(--chart-${(i % 5) + 1})`,
+                  fillOpacity: 0.4,
+                  stackId: "1",
+                }))}
+                showLegend
+              />
             )}
 
             {/* Meal Complexity by Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Meal Complexity by Type</CardTitle>
-                <CardDescription>
-                  Average number of food items per meal — are dinners more
-                  complex than snacks?
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgItemsPerMeal: {
-                      label: "Avg Items/Meal",
-                      color: "var(--chart-2)",
-                    },
-                  }}
-                  className="h-[350px] w-full aspect-auto"
-                >
-                  <BarChart data={complexityData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      dataKey="avgItemsPerMeal"
-                      fill="var(--chart-2)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
+            <BarChartCard
+              title="Meal Complexity by Type"
+              description="Average number of food items per meal — are dinners more complex than snacks?"
+              config={{ avgItemsPerMeal: { label: "Avg Items/Meal", color: "var(--chart-2)" } }}
+              data={complexityData as unknown as Record<string, unknown>[]}
+              bars={[{ dataKey: "avgItemsPerMeal", fill: "var(--chart-2)" }]}
+              xAxisKey="meal"
+            />
             </Card>
           </div>
         </>
