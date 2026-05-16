@@ -202,3 +202,130 @@ export interface AnalyticsSummary {
     avgUltraProcessedPct: number | null;
   };
 }
+
+// ── Shopping List Analytics ─────────────────────────────────
+
+export interface ShoppingListFilters {
+  periodStart?: string;
+  periodEnd?: string;
+  dimension?: string;
+  dim1?: string;
+  dim2?: string;
+}
+
+export interface SlItemPopularity {
+  id: string;
+  date: string;
+  itemName: string;
+  foodGroup: string | null;
+  frequency: number;
+  uniqueUsers: number;
+  avgQuantity: number;
+  predominantUnit: string;
+}
+
+export interface SlCategoryPopularity {
+  id: string;
+  date: string;
+  category: string;
+  frequency: number;
+  uniqueUsers: number;
+  avgItemsPerList: number;
+}
+
+export interface SlListPatterns {
+  id: string;
+  date: string;
+  userCount: number;
+  totalLists: number;
+  avgItemsPerList: number;
+  avgUniqueItemsPerList: number;
+  completionRate: number | null;
+  avgListsPerUser: number | null;
+}
+
+export interface SlNutritionProfile {
+  id: string;
+  date: string;
+  userCount: number;
+  avgCalories: number | null;
+  avgProteins: number | null;
+  avgFat: number | null;
+  avgCarbs: number | null;
+  avgFiber: number | null;
+  avgSodium: number | null;
+  avgSugar: number | null;
+  avgSaturatedFat: number | null;
+}
+
+export interface SlSustainability {
+  id: string;
+  date: string;
+  userCount: number;
+  avgSustainabilityScore: number | null;
+  avgCarbonFootprint: number | null;
+  nutriScoreDistribution: Record<string, number> | null;
+  ecoScoreDistribution: Record<string, number> | null;
+}
+
+export interface SlFoodGroups {
+  id: string;
+  date: string;
+  foodGroup: string;
+  frequency: number;
+  uniqueUsers: number;
+  avgItemsPerList: number;
+}
+
+export interface SlDemographicPatterns extends SlListPatterns {
+  ageGroup: string | null;
+  gender: string | null;
+  educationLevel: string | null;
+  region: string | null;
+  country: string | null;
+}
+
+export interface SlDemographicNutrition extends SlNutritionProfile {
+  ageGroup: string | null;
+  gender: string | null;
+  educationLevel: string | null;
+  region: string | null;
+  country: string | null;
+}
+
+export interface SlCrossDimPatterns extends Omit<SlListPatterns, "date"> {
+  date: string;
+  dim1Name: string;
+  dim1Value: string;
+  dim2Name: string;
+  dim2Value: string;
+}
+
+export interface SlCrossDimNutrition extends Omit<SlNutritionProfile, "date"> {
+  date: string;
+  dim1Name: string;
+  dim1Value: string;
+  dim2Name: string;
+  dim2Value: string;
+}
+
+export interface SlSummary {
+  period: { from: string | null; to: string | null };
+  lists: {
+    dataPoints: number;
+    totalLists: number | null;
+    avgItemsPerList: number | null;
+    avgCompletionRate: number | null;
+  };
+  topItems: { name: string; frequency: number; uniqueUsers: number }[];
+  topCategories: { name: string; frequency: number }[];
+  nutrition: {
+    dataPoints: number;
+    avgCalories: number | null;
+    avgProteins: number | null;
+  };
+  sustainability: {
+    dataPoints: number;
+    avgSustainabilityScore: number | null;
+  };
+}
