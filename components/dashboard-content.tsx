@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardTitle,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Utensils, Flame, Globe } from "lucide-react";
@@ -14,8 +13,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import {
   Bar,
@@ -23,14 +20,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
 } from "recharts";
 import { Map } from "@/components/ui/map";
 import { CountryChoropleth } from "@/components/country-choropleth";
+import { PieChartCard } from "@/components/ui/pie-chart-card";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
-import { DIMENSION_LABELS, PIE_COLORS } from "@/lib/constants";
+import { DIMENSION_LABELS } from "@/lib/constants";
 
 // ── Sub-components ────────────────────────────────────────
 
@@ -150,46 +145,17 @@ function MealTypeSection({
 }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Meals by Type</CardTitle>
-          <CardDescription>Total recorded meals grouped by meal type</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer
-            config={Object.fromEntries(
-              mealTypeChart.map((d, i) => [
-                d.type,
-                { label: d.type, color: PIE_COLORS[i % PIE_COLORS.length] },
-              ]),
-            )}
-            className="h-[300px]"
-          >
-            <PieChart>
-              <Pie
-                data={mealTypeChart}
-                dataKey="count"
-                nameKey="type"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={110}
-                paddingAngle={2}
-                label={({ type, count }) => `${type}: ${count.toLocaleString()}`}
-              >
-                {mealTypeChart.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
-            </PieChart>
-          </ChartContainer>
-        </CardContent>
-        <CardFooter className="text-xs text-muted-foreground">
-          {totalMeals.toLocaleString()} meals total
-        </CardFooter>
-      </Card>
+      <PieChartCard
+        title="Meals by Type"
+        description="Total recorded meals grouped by meal type"
+        data={mealTypeChart as unknown as Record<string, unknown>[]}
+        dataKey="count"
+        nameKey="type"
+        innerRadius={60}
+        outerRadius={110}
+        chartHeight={300}
+        footer={`${totalMeals.toLocaleString()} meals total`}
+      />
 
       <Card>
         <CardHeader>
@@ -254,43 +220,16 @@ function DemographicsSection({
         )}
 
         {genderChart.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{DIMENSION_LABELS.gender}</CardTitle>
-              <CardDescription>Users per gender</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={Object.fromEntries(
-                  genderChart.map((d, i) => [
-                    d.label,
-                    { label: d.label, color: PIE_COLORS[i % PIE_COLORS.length] },
-                  ]),
-                )}
-                className="h-[250px]"
-              >
-                <PieChart>
-                  <Pie
-                    data={genderChart}
-                    dataKey="users"
-                    nameKey="label"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={90}
-                    paddingAngle={3}
-                    label={({ label, users }) => `${label}: ${users}`}
-                  >
-                    {genderChart.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                </PieChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <PieChartCard
+            title={DIMENSION_LABELS.gender}
+            description="Users per gender"
+            data={genderChart as unknown as Record<string, unknown>[]}
+            dataKey="users"
+            nameKey="label"
+            innerRadius={50}
+            outerRadius={90}
+            chartHeight={250}
+          />
         )}
 
         {educationChart.length > 0 && (

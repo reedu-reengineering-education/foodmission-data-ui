@@ -28,9 +28,6 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  Cell,
-  Pie,
-  PieChart,
 } from "recharts";
 
 // Research Question: Baseline dietary differences in different countries

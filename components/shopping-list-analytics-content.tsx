@@ -26,12 +26,10 @@ import {
   Area,
   AreaChart,
   ComposedChart,
-  Cell,
-  Pie,
-  PieChart,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
+import { PieChartCard } from "@/components/ui/pie-chart-card";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import {
@@ -44,7 +42,7 @@ import {
   type SlDemographicPatterns,
   type SlDemographicNutrition,
 } from "@/lib/types";
-import { DIMENSION_LABELS, PIE_COLORS } from "@/lib/constants";
+import { DIMENSION_LABELS } from "@/lib/constants";
 import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
 
 // ── helpers ───────────────────────────────────────────────
@@ -400,68 +398,26 @@ export function ShoppingListAnalyticsContent() {
             )}
 
             {topCategories.length > 0 && (
-              <Card id="category-breakdown">
-                <CardHeader>
-                  <CardTitle>Category Breakdown</CardTitle>
-                  <CardDescription>Most listed categories by frequency</CardDescription>
-                </CardHeader>
-                <CardContent className="overflow-hidden">
-                  <ChartContainer
-                    config={Object.fromEntries(
-                      topCategories.map((d, i) => [
-                        d.category,
-                        { label: d.category, color: PIE_COLORS[i % PIE_COLORS.length] },
-                      ])
-                    )}
-                    className="w-full"
-                    style={{ height: Math.max(260, topCategories.length * 22 + 200) }}
-                  >
-                    <PieChart>
-                      <Pie
-                        data={topCategories}
-                        dataKey="frequency"
-                        nameKey="category"
-                        cx="50%"
-                        cy="42%"
-                        innerRadius={55}
-                        outerRadius={90}
-                        paddingAngle={2}
-                      >
-                        {topCategories.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend content={<ChartLegendContent />} />
-                    </PieChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+              <PieChartCard
+                id="category-breakdown"
+                title="Category Breakdown"
+                description="Most listed categories by frequency"
+                data={topCategories as unknown as Record<string, unknown>[]}
+                dataKey="frequency"
+                nameKey="category"
+              />
             )}
           </div>
 
           {/* ── Food Groups ────────────────────────────── */}
           {topFoodGroups.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Food Groups</CardTitle>
-                <CardDescription>Distribution of listed items by food group</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{ frequency: { label: "Frequency", color: "var(--chart-3)" } }}
-                  className="h-[300px]"
-                >
-                  <BarChart data={topFoodGroups}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="foodGroup" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={60} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="frequency" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <PieChartCard
+              title="Food Groups"
+              description="Distribution of listed items by food group"
+              data={topFoodGroups as unknown as Record<string, unknown>[]}
+              dataKey="frequency"
+              nameKey="foodGroup"
+            />
           )}
 
           {/* ── Nutrition Profile Trend ─────────────────── */}
