@@ -302,14 +302,6 @@ export function DashboardContent() {
       setAgeData(byAge);
       setGenderData(byGender);
       setEducationData(byEdu);
-      console.log("[Dashboard] Fetched data:", {
-        nutrition: nutr.length,
-        countries: byCountry.length,
-        age: byAge.length,
-        gender: byGender.length,
-        edu: byEdu.length,
-        sampleCountry: byCountry[0],
-      });
     } catch (e) {
       console.error("Failed to fetch dashboard data", e);
     } finally {
