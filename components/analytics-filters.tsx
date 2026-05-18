@@ -8,11 +8,12 @@ import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/constants";
 interface AnalyticsFiltersProps {
   periodStart: string;
   periodEnd: string;
-  typeOfMeal: string;
+  typeOfMeal?: string;
   onPeriodStartChange: (v: string) => void;
   onPeriodEndChange: (v: string) => void;
-  onTypeOfMealChange: (v: string) => void;
+  onTypeOfMealChange?: (v: string) => void;
   onApply: () => void;
+  showTypeOfMeal?: boolean;
   showDimension?: boolean;
   dimension?: string;
   onDimensionChange?: (v: string) => void;
@@ -26,11 +27,12 @@ interface AnalyticsFiltersProps {
 export function AnalyticsFiltersBar({
   periodStart,
   periodEnd,
-  typeOfMeal,
+  typeOfMeal = "",
   onPeriodStartChange,
   onPeriodEndChange,
-  onTypeOfMealChange,
+  onTypeOfMealChange = () => {},
   onApply,
+  showTypeOfMeal = true,
   showDimension = false,
   dimension,
   onDimensionChange,
@@ -60,21 +62,24 @@ export function AnalyticsFiltersBar({
           onChange={(e) => onPeriodEndChange(e.target.value)}
         />
       </div>
-      <div className="space-y-1">
-        <Label className="text-xs">Meal Type</Label>
-        <select
-          className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          value={typeOfMeal}
-          onChange={(e) => onTypeOfMealChange(e.target.value)}
-        >
-          <option value="">All</option>
-          {MEAL_TYPES.map((m) => (
-            <option key={m} value={m}>
-              {m.charAt(0) + m.slice(1).toLowerCase().replace("_", " ")}
-            </option>
-          ))}
-        </select>
-      </div>
+
+      {showTypeOfMeal && (
+        <div className="space-y-1">
+          <Label className="text-xs">Meal Type</Label>
+          <select
+            className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={typeOfMeal}
+            onChange={(e) => onTypeOfMealChange(e.target.value)}
+          >
+            <option value="">All</option>
+            {MEAL_TYPES.map((m) => (
+              <option key={m} value={m}>
+                {m.charAt(0) + m.slice(1).toLowerCase().replace("_", " ")}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {showDimension && onDimensionChange && (
         <div className="space-y-1">

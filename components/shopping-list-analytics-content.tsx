@@ -43,15 +43,23 @@ import {
   type SlFoodGroups,
   type SlDemographicPatterns,
   type SlDemographicNutrition,
+  type SlCrossDimPatterns,
+  type SlCrossDimNutrition,
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
-import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
+import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
 
 // ── helpers ───────────────────────────────────────────────
 
 const GRADES = ["A", "B", "C", "D", "E"];
-function gradeCount(agg: Record<string, number>, g: string) {
-  return (agg[g.toLowerCase()] ?? 0) + (agg[g] ?? 0);
+
+function normalizeGradeAgg(raw: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    const key = k.trim().toUpperCase();
+    out[key] = (out[key] ?? 0) + v;
+  }
+  return out;
 }
 
 // ── Main component ────────────────────────────────────────
@@ -60,11 +68,10 @@ export function ShoppingListAnalyticsContent() {
   const {
     periodStart, setPeriodStart,
     periodEnd, setPeriodEnd,
-    typeOfMeal: _unused,
-    setTypeOfMeal: _setUnused,
-    dimension,
-    setDimension,
-  } = useAnalyticsFiltersWithDimension("ageGroup");
+    dimension, setDimension,
+    dim1, setDim1,
+    dim2, setDim2,
+  } = useShoppingListFilters();
 
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<SlItemPopularity[]>([]);
@@ -75,6 +82,8 @@ export function ShoppingListAnalyticsContent() {
   const [foodGroups, setFoodGroups] = useState<SlFoodGroups[]>([]);
   const [demoPatterns, setDemoPatterns] = useState<SlDemographicPatterns[]>([]);
   const [demoNutrition, setDemoNutrition] = useState<SlDemographicNutrition[]>([]);
+  const [crossPatterns, setCrossPatterns] = useState<SlCrossDimPatterns[]>([]);
+  const [crossNutrition, setCrossNutrition] = useState<SlCrossDimNutrition[]>([]);
 
   const filters = useMemo(() => ({
     periodStart: periodStart || undefined,
@@ -84,7 +93,7 @@ export function ShoppingListAnalyticsContent() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [i, c, p, n, s, fg, dp, dn] = await Promise.all([
+      const [i, c, p, n, s, fg, dp, dn, cp, cn] = await Promise.all([
         shoppingListApi.itemPopularity(filters),
         shoppingListApi.categoryPopularity(filters),
         shoppingListApi.listPatterns(filters),
@@ -93,6 +102,8 @@ export function ShoppingListAnalyticsContent() {
         shoppingListApi.foodGroups(filters),
         shoppingListApi.demographicPatterns({ ...filters, dimension: dimension || undefined }),
         shoppingListApi.demographicNutrition({ ...filters, dimension: dimension || undefined }),
+        shoppingListApi.crossDimPatterns({ ...filters, dim1: dim1 || undefined, dim2: dim2 || undefined }),
+        shoppingListApi.crossDimNutrition({ ...filters, dim1: dim1 || undefined, dim2: dim2 || undefined }),
       ]);
       setItems(i);
       setCategories(c);
@@ -102,12 +113,14 @@ export function ShoppingListAnalyticsContent() {
       setFoodGroups(fg);
       setDemoPatterns(dp);
       setDemoNutrition(dn);
+      setCrossPatterns(cp);
+      setCrossNutrition(cn);
     } catch (e) {
       console.error("Failed to fetch shopping list analytics", e);
     } finally {
       setLoading(false);
     }
-  }, [filters, dimension]);
+  }, [filters, dimension, dim1, dim2]);
 
   useEffect(() => {
     fetchData();
@@ -172,27 +185,29 @@ export function ShoppingListAnalyticsContent() {
       avgFat: Math.round((r.avgFat ?? 0) * 10) / 10,
     }));
 
-  // Sustainability score distribution
-  const nutriScoreAgg: Record<string, number> = {};
-  const ecoScoreAgg: Record<string, number> = {};
+  // Sustainability score distribution (normalize keys at aggregation time)
+  const nutriScoreAggRaw: Record<string, number> = {};
+  const ecoScoreAggRaw: Record<string, number> = {};
   for (const row of sustainability) {
     if (row.nutriScoreDistribution) {
       for (const [g, count] of Object.entries(row.nutriScoreDistribution)) {
-        nutriScoreAgg[g] = (nutriScoreAgg[g] ?? 0) + (count as number);
+        nutriScoreAggRaw[g] = (nutriScoreAggRaw[g] ?? 0) + (count as number);
       }
     }
     if (row.ecoScoreDistribution) {
       for (const [g, count] of Object.entries(row.ecoScoreDistribution)) {
-        ecoScoreAgg[g] = (ecoScoreAgg[g] ?? 0) + (count as number);
+        ecoScoreAggRaw[g] = (ecoScoreAggRaw[g] ?? 0) + (count as number);
       }
     }
   }
+  const nutriScoreAgg = normalizeGradeAgg(nutriScoreAggRaw);
+  const ecoScoreAgg = normalizeGradeAgg(ecoScoreAggRaw);
   const nutriScoreData = GRADES
-    .filter((g) => gradeCount(nutriScoreAgg, g) > 0)
-    .map((g) => ({ grade: g, count: gradeCount(nutriScoreAgg, g) }));
+    .map((g) => ({ grade: g, count: nutriScoreAgg[g] ?? 0 }))
+    .filter((x) => x.count > 0);
   const ecoScoreData = GRADES
-    .filter((g) => gradeCount(ecoScoreAgg, g) > 0)
-    .map((g) => ({ grade: g, count: gradeCount(ecoScoreAgg, g) }));
+    .map((g) => ({ grade: g, count: ecoScoreAgg[g] ?? 0 }))
+    .filter((x) => x.count > 0);
 
   // Demographic patterns breakdown
   const demoPatternsByDim = Object.values(
@@ -238,6 +253,42 @@ export function ShoppingListAnalyticsContent() {
     avgCalories: Math.round(v.avgCalories / (v.count || 1)),
   })).sort((a, b) => b.avgCalories - a.avgCalories);
 
+  // Cross-dimensional patterns
+  const crossPatternChart = Object.values(
+    crossPatterns.reduce<Record<string, { label: string; avgItemsPerList: number; count: number }>>(
+      (acc, r) => {
+        const label = `${r.dim1Value} / ${r.dim2Value}`;
+        if (!acc[label]) acc[label] = { label, avgItemsPerList: 0, count: 0 };
+        acc[label].avgItemsPerList += r.avgItemsPerList;
+        acc[label].count++;
+        return acc;
+      }, {}
+    )
+  ).map((v) => ({
+    label: v.label,
+    avgItemsPerList: Math.round((v.avgItemsPerList / (v.count || 1)) * 10) / 10,
+  })).sort((a, b) => b.avgItemsPerList - a.avgItemsPerList);
+
+  // Cross-dimensional nutrition
+  const crossNutritionChart = Object.values(
+    crossNutrition.reduce<Record<string, { label: string; avgCalories: number; count: number }>>(
+      (acc, r) => {
+        const label = `${r.dim1Value} / ${r.dim2Value}`;
+        if (!acc[label]) acc[label] = { label, avgCalories: 0, count: 0 };
+        acc[label].avgCalories += r.avgCalories ?? 0;
+        acc[label].count++;
+        return acc;
+      }, {}
+    )
+  ).map((v) => ({
+    label: v.label,
+    avgCalories: Math.round(v.avgCalories / (v.count || 1)),
+  })).sort((a, b) => b.avgCalories - a.avgCalories);
+
+  const dim1Label = DIMENSION_LABELS[dim1 as keyof typeof DIMENSION_LABELS] ?? dim1;
+  const dim2Label = DIMENSION_LABELS[dim2 as keyof typeof DIMENSION_LABELS] ?? dim2;
+  const crossLabel = `${dim1Label} × ${dim2Label}`;
+
   const noData = patterns.length === 0 && items.length === 0;
 
   // ── Loading skeleton ──────────────────────────────────
@@ -278,14 +329,18 @@ export function ShoppingListAnalyticsContent() {
       <AnalyticsFiltersBar
         periodStart={periodStart}
         periodEnd={periodEnd}
-        typeOfMeal=""
         onPeriodStartChange={setPeriodStart}
         onPeriodEndChange={setPeriodEnd}
-        onTypeOfMealChange={_setUnused}
         onApply={fetchData}
+        showTypeOfMeal={false}
         showDimension
         dimension={dimension}
         onDimensionChange={setDimension}
+        showCrossDim
+        dim1={dim1}
+        dim2={dim2}
+        onDim1Change={setDim1}
+        onDim2Change={setDim2}
       />
 
       {/* KPI cards */}
@@ -506,6 +561,42 @@ export function ShoppingListAnalyticsContent() {
                     yAxisKey="label"
                     yAxisWidth={120}
                     height="h-[300px]"
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Cross-dimensional ─────────────────────── */}
+          {(crossPatternChart.length > 0 || crossNutritionChart.length > 0) && (
+            <div id="cross-dimensional">
+              <h3 className="text-lg font-semibold mb-1">
+                Cross-dimensional — {crossLabel}
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {crossPatternChart.length > 0 && (
+                  <HorizontalBarChartCard
+                    title={`List Patterns by ${crossLabel}`}
+                    description="Avg items per list per group combination"
+                    config={{ avgItemsPerList: { label: "Avg Items / List", color: "var(--chart-1)" } }}
+                    data={crossPatternChart as unknown as Record<string, unknown>[]}
+                    bars={[{ dataKey: "avgItemsPerList", fill: "var(--chart-1)" }]}
+                    yAxisKey="label"
+                    yAxisWidth={160}
+                    footer="Groups with <20 users suppressed for privacy"
+                  />
+                )}
+
+                {crossNutritionChart.length > 0 && (
+                  <HorizontalBarChartCard
+                    title={`Avg Calories by ${crossLabel}`}
+                    description="Average planned calories per list per group combination"
+                    config={{ avgCalories: { label: "Avg Calories", color: "var(--chart-3)" } }}
+                    data={crossNutritionChart as unknown as Record<string, unknown>[]}
+                    bars={[{ dataKey: "avgCalories", fill: "var(--chart-3)" }]}
+                    yAxisKey="label"
+                    yAxisWidth={160}
+                    footer="Groups with <20 users suppressed for privacy"
                   />
                 )}
               </div>

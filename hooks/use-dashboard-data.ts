@@ -6,6 +6,7 @@ import { aggregateDemographic } from "@/lib/utils";
 
 export interface DashboardMetrics {
   loading: boolean;
+  error: string | null;
   noData: boolean;
   totalUsers: number;
   totalMeals: number;
@@ -16,10 +17,12 @@ export interface DashboardMetrics {
   ageChart: { label: string; users: number }[];
   genderChart: { label: string; users: number }[];
   educationChart: { label: string; users: number }[];
+  refetch: () => void;
 }
 
 export function useDashboardData(): DashboardMetrics {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [nutrition, setNutrition] = useState<DailyNutrition[]>([]);
   const [countryData, setCountryData] = useState<DemographicNutrition[]>([]);
   const [ageData, setAgeData] = useState<DemographicNutrition[]>([]);
@@ -28,6 +31,7 @@ export function useDashboardData(): DashboardMetrics {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const [nutr, byCountry, byAge, byGender, byEdu] = await Promise.all([
         analyticsApi.nutrition(),
@@ -43,6 +47,7 @@ export function useDashboardData(): DashboardMetrics {
       setEducationData(byEdu);
     } catch (e) {
       console.error("Failed to fetch dashboard data", e);
+      setError(e instanceof Error ? e.message : "Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
@@ -101,5 +106,5 @@ export function useDashboardData(): DashboardMetrics {
     };
   }, [nutrition, countryData, ageData, genderData, educationData]);
 
-  return { loading, ...metrics };
+  return { loading, error, refetch: fetchData, ...metrics };
 }

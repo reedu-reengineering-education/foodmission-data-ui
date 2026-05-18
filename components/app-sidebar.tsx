@@ -98,6 +98,7 @@ const data = {
         { title: "Nutrition Profile", url: "/shopping-list-analytics#nutrition-profile" },
         { title: "Sustainability", url: "/shopping-list-analytics#sustainability" },
         { title: "Demographic Insights", url: "/shopping-list-analytics#demographic-insights" },
+        { title: "Cross-dimensional", url: "/shopping-list-analytics#cross-dimensional" },
       ],
     },
     {

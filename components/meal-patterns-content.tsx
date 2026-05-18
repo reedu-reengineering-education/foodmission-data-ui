@@ -313,7 +313,6 @@ export function MealPatternsContent() {
               bars={[{ dataKey: "avgItemsPerMeal", fill: "var(--chart-2)" }]}
               xAxisKey="meal"
             />
-            </Card>
           </div>
         </>
       )}

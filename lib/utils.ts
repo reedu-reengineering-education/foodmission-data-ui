@@ -1,14 +1,13 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { DemographicNutrition } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function aggregateDemographic(
-  rows: DemographicNutrition[],
-  dimKey: keyof DemographicNutrition,
+export function aggregateDemographic<T extends { userCount: number }>(
+  rows: T[],
+  dimKey: keyof T,
 ): { label: string; users: number }[] {
   const agg: Record<string, number> = {};
   for (const r of rows) {

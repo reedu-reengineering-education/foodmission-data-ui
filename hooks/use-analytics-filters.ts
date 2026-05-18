@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Dimension } from "@/lib/types";
 
 export interface AnalyticsFilterState {
   periodStart: string;
@@ -18,19 +19,45 @@ export function useAnalyticsFilters(): AnalyticsFilterState {
 }
 
 /** Filter state with an additional demographic dimension */
-export function useAnalyticsFiltersWithDimension(defaultDimension = "ageGroup") {
+export function useAnalyticsFiltersWithDimension(defaultDimension: Dimension = Dimension.AgeGroup) {
   const base = useAnalyticsFilters();
-  const [dimension, setDimension] = useState(defaultDimension);
+  const [dimension, setDimension] = useState<Dimension>(defaultDimension);
   return { ...base, dimension, setDimension };
 }
 
 /** Filter state with two cross-dimensional selectors */
 export function useAnalyticsFiltersWithCrossDim(
-  defaultDim1 = "ageGroup",
-  defaultDim2 = "gender",
+  defaultDim1: Dimension = Dimension.AgeGroup,
+  defaultDim2: Dimension = Dimension.Gender,
 ) {
   const base = useAnalyticsFilters();
-  const [dim1, setDim1] = useState(defaultDim1);
-  const [dim2, setDim2] = useState(defaultDim2);
+  const [dim1, setDim1] = useState<Dimension>(defaultDim1);
+  const [dim2, setDim2] = useState<Dimension>(defaultDim2);
   return { ...base, dim1, setDim1, dim2, setDim2 };
+}
+
+/**
+ * Filter state for shopping list analytics — no typeOfMeal,
+ * but includes both a single dimension and cross-dim selectors.
+ */
+export function useShoppingListFilters(
+  defaultDimension: Dimension = Dimension.AgeGroup,
+  defaultDim1: Dimension = Dimension.AgeGroup,
+  defaultDim2: Dimension = Dimension.Gender,
+) {
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  const [dimension, setDimensionState] = useState<string>(defaultDimension);
+  const [dim1, setDim1State] = useState<string>(defaultDim1);
+  const [dim2, setDim2State] = useState<string>(defaultDim2);
+  return {
+    periodStart, setPeriodStart,
+    periodEnd, setPeriodEnd,
+    dimension,
+    setDimension: (v: string) => setDimensionState(v),
+    dim1,
+    setDim1: (v: string) => setDim1State(v),
+    dim2,
+    setDim2: (v: string) => setDim2State(v),
+  };
 }
