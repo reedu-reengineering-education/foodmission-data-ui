@@ -202,7 +202,7 @@ export function MealPatternsContent() {
                     color: "var(--chart-3)",
                   },
                 }}
-                className="h-[350px]"
+                className="h-[350px] w-full aspect-auto"
               >
                 <ComposedChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" />
