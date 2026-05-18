@@ -1,6 +1,9 @@
 // Project-wide constants
 import { MealType, Dimension } from "./types";
 
+/** Viewports below this width use mobile layout (sidebar sheet, etc.) */
+export const MOBILE_BREAKPOINT_PX = 1024;
+
 export const MEAL_TYPES = Object.values(MealType);
 export const DIMENSIONS = Object.values(Dimension);
 

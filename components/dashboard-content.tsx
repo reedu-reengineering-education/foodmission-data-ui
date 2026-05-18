@@ -32,7 +32,7 @@ function KpiCards({
   mealTypeCount: number;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardDescription>Total Users</CardDescription>
@@ -94,8 +94,8 @@ function MapSection({
   countryChoro: { country: string; users: number; code: string }[];
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-7">
-      <Card className="md:col-span-4 p-0 overflow-hidden min-h-[400px]">
+    <div className="grid gap-4 lg:grid-cols-7">
+      <Card className="lg:col-span-4 p-0 overflow-hidden min-h-[400px]">
         <Map center={[10, 50]} zoom={3.5} projection={{ type: "mercator" }}>
           <CountryChoropleth data={countryChoro} />
         </Map>
@@ -110,7 +110,7 @@ function MapSection({
         yAxisKey="country"
         yAxisWidth={100}
         height="h-[300px]"
-        className="md:col-span-3"
+        className="lg:col-span-3"
       />
     </div>
   );
@@ -124,7 +124,7 @@ function MealTypeSection({
   totalMeals: number;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2">
       <PieChartCard
         title="Meals by Type"
         description="Total recorded meals grouped by meal type"
@@ -164,7 +164,7 @@ function DemographicsSection({
       <div>
         <h3 className="text-lg font-semibold mb-3">Users by Demographics</h3>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {ageChart.length > 0 && (
           <BarChartCard
             title={DIMENSION_LABELS.ageGroup}
@@ -228,7 +228,7 @@ export function DashboardContent() {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           <Skeleton className="h-28" />
           <Skeleton className="h-28" />
           <Skeleton className="h-28" />
