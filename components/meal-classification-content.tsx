@@ -345,10 +345,10 @@ export function MealClassificationContent() {
                         color: "var(--chart-4)",
                       },
                     }}
-                    className="h-[300px]"
-                  >
-                    <BarChart data={novaData}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                  className="h-[300px] w-full aspect-auto"
+                >
+                  <BarChart data={novaData}>
+                    <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="group" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
                       <ChartTooltip
