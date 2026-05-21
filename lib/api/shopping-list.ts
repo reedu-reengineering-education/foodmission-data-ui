@@ -1,8 +1,10 @@
 import { createApiMethod } from "./client";
 import type {
   SlCategoryPopularity,
+  SlCrossDimClassification,
   SlCrossDimNutrition,
   SlCrossDimPatterns,
+  SlDemographicClassification,
   SlDemographicNutrition,
   SlDemographicPatterns,
   SlFoodGroups,
@@ -38,11 +40,17 @@ export const shoppingListApi = {
   demographicNutrition: createApiMethod<SlDemographicNutrition[]>(
     "/analytics/shopping-list/public/demographic/nutrition",
   ),
+  demographicClassification: createApiMethod<SlDemographicClassification[]>(
+    "/analytics/shopping-list/public/demographic/classification",
+  ),
   crossDimPatterns: createApiMethod<SlCrossDimPatterns[]>(
     "/analytics/shopping-list/public/cross-dim/patterns",
   ),
   crossDimNutrition: createApiMethod<SlCrossDimNutrition[]>(
     "/analytics/shopping-list/public/cross-dim/nutrition",
+  ),
+  crossDimClassification: createApiMethod<SlCrossDimClassification[]>(
+    "/analytics/shopping-list/public/cross-dim/classification",
   ),
   summary: createApiMethod<SlSummary>(
     "/analytics/shopping-list/public/summary",

@@ -216,8 +216,9 @@ export interface ShoppingListFilters {
 export interface SlItemPopularity {
   id: string;
   date: string;
-  itemName: string;
+  foodName: string;
   foodGroup: string | null;
+  itemType: string; // "food_product" | "generic_food"
   frequency: number;
   uniqueUsers: number;
   avgQuantity: number;
@@ -230,7 +231,6 @@ export interface SlCategoryPopularity {
   category: string;
   frequency: number;
   uniqueUsers: number;
-  avgItemsPerList: number;
 }
 
 export interface SlListPatterns {
@@ -239,33 +239,41 @@ export interface SlListPatterns {
   userCount: number;
   totalLists: number;
   avgItemsPerList: number;
-  avgUniqueItemsPerList: number;
-  completionRate: number | null;
   avgListsPerUser: number | null;
+  foodProductPct: number | null;
+  genericFoodPct: number | null;
 }
 
 export interface SlNutritionProfile {
   id: string;
   date: string;
   userCount: number;
-  avgCalories: number | null;
-  avgProteins: number | null;
-  avgFat: number | null;
-  avgCarbs: number | null;
-  avgFiber: number | null;
-  avgSodium: number | null;
-  avgSugar: number | null;
-  avgSaturatedFat: number | null;
+  itemCount: number;
+  avgCaloriesPer100g: number | null;
+  avgProteinsPer100g: number | null;
+  avgFatPer100g: number | null;
+  avgCarbsPer100g: number | null;
+  avgFiberPer100g: number | null;
+  avgSodiumPer100g: number | null;
+  avgSugarPer100g: number | null;
+  avgSaturatedFatPer100g: number | null;
+  p25CaloriesPer100g: number | null;
+  p50CaloriesPer100g: number | null;
+  p75CaloriesPer100g: number | null;
 }
 
 export interface SlSustainability {
   id: string;
   date: string;
   userCount: number;
-  avgSustainabilityScore: number | null;
+  itemCount: number;
   avgCarbonFootprint: number | null;
+  vegetarianItemPct: number | null;
+  veganItemPct: number | null;
+  avgUltraProcessedPct: number | null;
   nutriScoreDistribution: Record<string, number> | null;
   ecoScoreDistribution: Record<string, number> | null;
+  novaDistribution: Record<string, number> | null;
 }
 
 export interface SlFoodGroups {
@@ -274,23 +282,33 @@ export interface SlFoodGroups {
   foodGroup: string;
   frequency: number;
   uniqueUsers: number;
-  avgItemsPerList: number;
+  avgQuantity: number;
+  predominantUnit: string;
 }
 
 export interface SlDemographicPatterns extends SlListPatterns {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
+  dimensionName: string;
+  dimensionValue: string;
 }
 
 export interface SlDemographicNutrition extends SlNutritionProfile {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
+  dimensionName: string;
+  dimensionValue: string;
+}
+
+export interface SlDemographicClassification {
+  id: string;
+  date: string;
+  dimensionName: string;
+  dimensionValue: string;
+  userCount: number;
+  vegetarianItemPct: number | null;
+  veganItemPct: number | null;
+  avgUltraProcessedPct: number | null;
+  p25UltraProcessedPct: number | null;
+  p50UltraProcessedPct: number | null;
+  p75UltraProcessedPct: number | null;
+  novaDistribution: Record<string, number> | null;
 }
 
 export interface SlCrossDimPatterns extends Omit<SlListPatterns, "date"> {
@@ -309,23 +327,38 @@ export interface SlCrossDimNutrition extends Omit<SlNutritionProfile, "date"> {
   dim2Value: string;
 }
 
+export interface SlCrossDimClassification {
+  id?: string;
+  date: string;
+  dim1Name: string;
+  dim1Value: string;
+  dim2Name: string;
+  dim2Value: string;
+  userCount: number;
+  vegetarianItemPct: number | null;
+  veganItemPct: number | null;
+  avgUltraProcessedPct: number | null;
+  novaDistribution: Record<string, number> | null;
+}
+
 export interface SlSummary {
   period: { from: string | null; to: string | null };
-  lists: {
-    dataPoints: number;
-    totalLists: number | null;
-    avgItemsPerList: number | null;
-    avgCompletionRate: number | null;
-  };
   topItems: { name: string; frequency: number; uniqueUsers: number }[];
-  topCategories: { name: string; frequency: number }[];
-  nutrition: {
+  topCategories: { category: string; frequency: number; uniqueUsers: number }[];
+  listPatterns: {
     dataPoints: number;
-    avgCalories: number | null;
-    avgProteins: number | null;
+    avgItemsPerList: number | null;
+    avgListsPerUser: number | null;
+  };
+  nutritionProfile: {
+    dataPoints: number;
+    latestAvgCaloriesPer100g: number | null;
+    latestAvgProteinsPer100g: number | null;
   };
   sustainability: {
     dataPoints: number;
-    avgSustainabilityScore: number | null;
+    avgCarbonFootprint: number | null;
+    avgVegetarianItemPct: number | null;
+    avgUltraProcessedPct: number | null;
   };
 }

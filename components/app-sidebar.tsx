@@ -89,16 +89,15 @@ const data = {
     },
     {
       title: "Shopping List",
-      url: "/shopping-list-analytics",
+      url: "/shopping-list/item-popularity",
       icon: ShoppingCart,
       items: [
-        { title: "Item Popularity", url: "/shopping-list-analytics#item-popularity" },
-        { title: "Category Breakdown", url: "/shopping-list-analytics#category-breakdown" },
-        { title: "List Patterns", url: "/shopping-list-analytics#list-patterns" },
-        { title: "Nutrition Profile", url: "/shopping-list-analytics#nutrition-profile" },
-        { title: "Sustainability", url: "/shopping-list-analytics#sustainability" },
-        { title: "Demographic Insights", url: "/shopping-list-analytics#demographic-insights" },
-        { title: "Cross-dimensional", url: "/shopping-list-analytics#cross-dimensional" },
+        { title: "Item Popularity", url: "/shopping-list/item-popularity" },
+        { title: "List Patterns", url: "/shopping-list/list-patterns" },
+        { title: "Nutrition Profile", url: "/shopping-list/nutrition-profile" },
+        { title: "Sustainability", url: "/shopping-list/sustainability" },
+        { title: "Demographic Insights", url: "/shopping-list/demographic-insights" },
+        { title: "Cross-dimensional", url: "/shopping-list/cross-dimensional" },
       ],
     },
     {

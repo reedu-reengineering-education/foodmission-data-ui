@@ -16,6 +16,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 // Parent URL segments that act as grouping levels in the breadcrumb
 const SEGMENT_META: Record<string, { label: string; href: string }> = {
   "meal-log": { label: "Meal Log", href: "/meal-log/nutrition-analytics" },
+  "shopping-list": { label: "Shopping List", href: "/shopping-list/item-popularity" },
 };
 
 interface PageShellProps {
