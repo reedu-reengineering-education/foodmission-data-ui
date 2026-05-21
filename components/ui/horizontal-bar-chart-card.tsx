@@ -14,6 +14,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import type { Formatter } from "recharts/types/component/DefaultTooltipContent";
 import { cn } from "@/lib/utils";
 import {
   Bar,
@@ -41,6 +42,9 @@ interface HorizontalBarChartCardProps {
   /** Width of the Y axis label column (default: 120) */
   yAxisWidth?: number;
   showLegend?: boolean;
+  /** Optional custom tooltip value formatter */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tooltipFormatter?: Formatter<any, any>;
   /**
    * Height of the chart area. Pass a Tailwind class string (e.g. "h-[350px]")
    * or a pixel number for dynamic height (e.g. data.length * 28).
@@ -61,6 +65,7 @@ export function HorizontalBarChartCard({
   yAxisKey,
   yAxisWidth = 120,
   showLegend,
+  tooltipFormatter,
   height = "h-[350px]",
   footer,
   className,
@@ -76,7 +81,7 @@ export function HorizontalBarChartCard({
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent className={typeof height === "number" ? "p-0 pb-4" : undefined}>
+      <CardContent className={typeof height === "number" ? "p-0 pb-4" : "overflow-x-auto"}>
         {typeof height === "number" ? (
           <div className="overflow-auto">
             <ChartContainer config={config} {...containerProps}>
@@ -90,7 +95,7 @@ export function HorizontalBarChartCard({
                   tick={{ fontSize: 10 }}
                   tickLine={false}
                 />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent formatter={tooltipFormatter} />} />
                 {showLegend && <ChartLegend content={<ChartLegendContent />} />}
                 {bars.map((bar) => (
                   <Bar
@@ -114,7 +119,7 @@ export function HorizontalBarChartCard({
                 width={yAxisWidth}
                 tick={{ fontSize: 10 }}
               />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip content={<ChartTooltipContent formatter={tooltipFormatter} />} />
               {showLegend && <ChartLegend content={<ChartLegendContent />} />}
               {bars.map((bar) => (
                 <Bar

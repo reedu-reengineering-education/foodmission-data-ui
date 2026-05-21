@@ -14,7 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ScatterChart, Scatter, ZAxis, Tooltip, Cell } from "recharts";
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ZAxis, Tooltip, Cell } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
@@ -155,53 +155,20 @@ export function FoodPopularityContent() {
 
           {/* Average Quantity per Food */}
           {quantityData.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Average Quantity per Food</CardTitle>
-                <CardDescription>
-                  How much of each food is consumed on average per meal
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    avgQuantity: {
-                      label: "Avg Quantity",
-                      color: "var(--chart-2)",
-                    },
-                  }}
-                  className="h-[450px] w-full aspect-auto"
-                >
-                  <BarChart data={quantityData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      dataKey="foodName"
-                      type="category"
-                      width={160}
-                      tick={{ fontSize: 11 }}
-                    />
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent
-                          formatter={(value, _name, item) =>
-                            `${value} ${(item.payload as Record<string, string>).unit}`
-                          }
-                        />
-                      }
-                    />
-                    <Bar
-                      dataKey="avgQuantity"
-                      fill="var(--chart-2)"
-                      radius={[0, 4, 4, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Quantity shown in the predominant unit for each food
-              </CardFooter>
-            </Card>
+            <HorizontalBarChartCard
+              title="Average Quantity per Food"
+              description="How much of each food is consumed on average per meal"
+              config={{ avgQuantity: { label: "Avg Quantity", color: "var(--chart-2)" } }}
+              data={quantityData as unknown as Record<string, unknown>[]}
+              bars={[{ dataKey: "avgQuantity", fill: "var(--chart-2)" }]}
+              yAxisKey="foodName"
+              yAxisWidth={160}
+              height="h-[450px]"
+              tooltipFormatter={(value, _name, item) =>
+                `${value} ${(item.payload as Record<string, string>).unit}`
+              }
+              footer="Quantity shown in the predominant unit for each food"
+            />
           )}
 
           {/* Frequency vs Unique Users Scatter */}
@@ -249,7 +216,7 @@ export function FoodPopularityContent() {
                       fontSize: 12,
                     }}
                   />
-                  <ZAxis dataKey="foodName" name="Food" />
+                  <ZAxis range={[40, 40]} />
                   <Tooltip
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
