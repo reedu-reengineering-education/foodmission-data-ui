@@ -17,15 +17,14 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import {
-  Bar,
   Line,
   Area,
   XAxis,
   YAxis,
   CartesianGrid,
   ComposedChart,
-  BarChart,
 } from "recharts";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
@@ -238,35 +237,24 @@ export function ShoppingListListPatternsContent() {
 
         {/* Item type breakdown over time */}
         {patternsTrend.some((r) => r.foodProductPct > 0 || r.genericFoodPct > 0) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Item Type Mix Over Time</CardTitle>
-              <CardDescription>
-                Branded food products vs generic foods (% of items)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <div style={{ minWidth: 400 }}>
-                <ChartContainer
-                  config={{
-                    foodProductPct: { label: "Branded %", color: "var(--chart-3)" },
-                    genericFoodPct: { label: "Generic %", color: "var(--chart-4)" },
-                  }}
-                  className="h-[280px] w-full aspect-auto"
-                >
-                  <BarChart data={patternsTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
-                    <YAxis tick={{ fontSize: 11 }} unit="%" />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar dataKey="foodProductPct" fill="var(--chart-3)" stackId="a" />
-                    <Bar dataKey="genericFoodPct" fill="var(--chart-4)" stackId="a" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ChartContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <BarChartCard
+            title="Item Type Mix Over Time"
+            description="Branded food products vs generic foods (% of items)"
+            config={{
+              foodProductPct: { label: "Branded %", color: "var(--chart-3)" },
+              genericFoodPct: { label: "Generic %", color: "var(--chart-4)" },
+            }}
+            data={patternsTrend as unknown as Record<string, unknown>[]}
+            bars={[
+              { dataKey: "foodProductPct", fill: "var(--chart-3)", stackId: "a", radius: [0, 0, 0, 0] },
+              { dataKey: "genericFoodPct", fill: "var(--chart-4)", stackId: "a" },
+            ]}
+            xAxisKey="date"
+            xAxisAngle={-45}
+            yAxisLabel="%"
+            showLegend
+            height="h-[280px]"
+          />
         )}
         </>
       )}
