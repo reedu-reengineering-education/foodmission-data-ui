@@ -51,6 +51,8 @@ interface HorizontalBarChartCardProps {
    * Default: "h-[350px]"
    */
   height?: string | number;
+  /** Minimum pixel width before horizontal scrolling kicks in. Default: 400 */
+  minWidth?: number;
   footer?: React.ReactNode;
   className?: string;
 }
@@ -67,6 +69,7 @@ export function HorizontalBarChartCard({
   showLegend,
   tooltipFormatter,
   height = "h-[350px]",
+  minWidth = 400,
   footer,
   className,
 }: HorizontalBarChartCardProps) {
@@ -109,28 +112,30 @@ export function HorizontalBarChartCard({
             </ChartContainer>
           </div>
         ) : (
-          <ChartContainer config={config} {...containerProps}>
-            <BarChart data={data} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis
-                dataKey={yAxisKey}
-                type="category"
-                width={yAxisWidth}
-                tick={{ fontSize: 10 }}
-              />
-              <ChartTooltip content={<ChartTooltipContent formatter={tooltipFormatter} />} />
-              {showLegend && <ChartLegend content={<ChartLegendContent />} />}
-              {bars.map((bar) => (
-                <Bar
-                  key={bar.dataKey}
-                  dataKey={bar.dataKey}
-                  fill={bar.fill}
-                  radius={bar.radius ?? [0, 4, 4, 0]}
+          <div style={{ minWidth }}>
+            <ChartContainer config={config} {...containerProps}>
+              <BarChart data={data} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis
+                  dataKey={yAxisKey}
+                  type="category"
+                  width={yAxisWidth}
+                  tick={{ fontSize: 10 }}
                 />
-              ))}
-            </BarChart>
-          </ChartContainer>
+                <ChartTooltip content={<ChartTooltipContent formatter={tooltipFormatter} />} />
+                {showLegend && <ChartLegend content={<ChartLegendContent />} />}
+                {bars.map((bar) => (
+                  <Bar
+                    key={bar.dataKey}
+                    dataKey={bar.dataKey}
+                    fill={bar.fill}
+                    radius={bar.radius ?? [0, 4, 4, 0]}
+                  />
+                ))}
+              </BarChart>
+            </ChartContainer>
+          </div>
         )}
       </CardContent>
       {footer && (

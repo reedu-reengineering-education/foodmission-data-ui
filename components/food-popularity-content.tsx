@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/card";
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
 } from "@/components/ui/chart";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ZAxis, Tooltip, Cell } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
@@ -180,7 +178,8 @@ export function FoodPopularityContent() {
                 favorites, wide reach = mainstream staples
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
+              <div style={{ minWidth: 400 }}>
               <ChartContainer
                 config={{
                   uniqueUsers: {
@@ -255,6 +254,7 @@ export function FoodPopularityContent() {
                   </Scatter>
                 </ScatterChart>
               </ChartContainer>
+              </div>
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground">
               Top-20 foods highlighted in blue
