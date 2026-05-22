@@ -128,14 +128,21 @@ export function CountryChoropleth({ data }: { data: ChoroplethEntry[] }) {
         const bg = isDarkNow ? "hsl(220, 14%, 16%)" : "hsl(0, 0%, 100%)";
         const fg = isDarkNow ? "hsl(210, 20%, 90%)" : "hsl(220, 14%, 16%)";
         const border = isDarkNow ? "hsl(220, 14%, 25%)" : "hsl(220, 14%, 85%)";
+
+        const container = document.createElement("div");
+        container.style.cssText = `padding:6px 10px;font-size:13px;line-height:1.5;background:${bg};color:${fg};border:1px solid ${border};border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15)`;
+        const strong = document.createElement("strong");
+        strong.textContent = entry.country;
+        const br = document.createElement("br");
+        const span = document.createElement("span");
+        span.textContent = `👥 ${entry.users.toLocaleString()} users`;
+        container.appendChild(strong);
+        container.appendChild(br);
+        container.appendChild(span);
+
         popup
           .setLngLat(e.lngLat)
-          .setHTML(
-            `<div style="padding:6px 10px;font-size:13px;line-height:1.5;background:${bg};color:${fg};border:1px solid ${border};border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">` +
-              `<strong>${entry.country}</strong><br/>` +
-              `<span>👥 ${entry.users.toLocaleString()} users</span>` +
-              `</div>`,
-          )
+          .setDOMContent(container)
           .addTo(map);
       } else {
         popup.remove();
