@@ -35,7 +35,7 @@ import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
 
 export function MealClassificationContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension, setDimension } = useAnalyticsFiltersWithDimension("ageGroup");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension, setDimension } = useAnalyticsFiltersWithDimension();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MealClassification[]>([]);
   const [demoData, setDemoData] = useState<DemographicClassification[]>([]);

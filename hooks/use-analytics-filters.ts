@@ -47,17 +47,14 @@ export function useShoppingListFilters(
 ) {
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
-  const [dimension, setDimensionState] = useState<string>(defaultDimension);
-  const [dim1, setDim1State] = useState<string>(defaultDim1);
-  const [dim2, setDim2State] = useState<string>(defaultDim2);
+  const [dimension, setDimension] = useState<Dimension>(defaultDimension);
+  const [dim1, setDim1] = useState<Dimension>(defaultDim1);
+  const [dim2, setDim2] = useState<Dimension>(defaultDim2);
   return {
     periodStart, setPeriodStart,
     periodEnd, setPeriodEnd,
-    dimension,
-    setDimension: (v: string) => setDimensionState(v),
-    dim1,
-    setDim1: (v: string) => setDim1State(v),
-    dim2,
-    setDim2: (v: string) => setDim2State(v),
+    dimension, setDimension,
+    dim1, setDim1,
+    dim2, setDim2,
   };
 }

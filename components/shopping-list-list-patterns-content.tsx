@@ -75,9 +75,10 @@ export function ShoppingListListPatternsContent() {
     }));
 
   const totalLists = patterns.reduce((s, r) => s + r.totalLists, 0);
-  const latestAvgItems = patternsTrend.at(-1)?.avgItemsPerList ?? null;
-  const latestAvgListsPerUser = patternsTrend.at(-1)?.avgListsPerUser ?? null;
-  const latestFoodProductPct = patternsTrend.at(-1)?.foodProductPct ?? null;
+  const latestEntry = patternsTrend[patternsTrend.length - 1];
+  const latestAvgItems = latestEntry?.avgItemsPerList ?? null;
+  const latestAvgListsPerUser = latestEntry?.avgListsPerUser ?? null;
+  const latestFoodProductPct = latestEntry?.foodProductPct ?? null;
 
   if (loading) {
     return (

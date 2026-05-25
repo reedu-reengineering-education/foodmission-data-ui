@@ -15,7 +15,7 @@ import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithCrossDim } from "@/hooks/use-analytics-filters";
 
 export function DemographicInsightsContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dim1, setDim1, dim2, setDim2 } = useAnalyticsFiltersWithCrossDim("ageGroup", "gender");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dim1, setDim1, dim2, setDim2 } = useAnalyticsFiltersWithCrossDim();
   const [loading, setLoading] = useState(true);
   const [nutrition, setNutrition] = useState<CrossDimNutrition[]>([]);
   const [classification, setClassification] = useState<

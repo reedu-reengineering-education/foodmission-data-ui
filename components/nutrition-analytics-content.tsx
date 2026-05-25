@@ -34,7 +34,7 @@ import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
 
 export function NutritionAnalyticsContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension: demoDimension, setDimension: setDemoDimension } = useAnalyticsFiltersWithDimension("ageGroup");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension: demoDimension, setDimension: setDemoDimension } = useAnalyticsFiltersWithDimension();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DailyNutrition[]>([]);
   const [demoData, setDemoData] = useState<DemographicNutrition[]>([]);

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/constants";
+import { Dimension } from "@/lib/types";
 
 interface AnalyticsFiltersProps {
   periodStart: string;
@@ -15,13 +16,13 @@ interface AnalyticsFiltersProps {
   onApply: () => void;
   showTypeOfMeal?: boolean;
   showDimension?: boolean;
-  dimension?: string;
-  onDimensionChange?: (v: string) => void;
+  dimension?: Dimension;
+  onDimensionChange?: (v: Dimension) => void;
   showCrossDim?: boolean;
-  dim1?: string;
-  dim2?: string;
-  onDim1Change?: (v: string) => void;
-  onDim2Change?: (v: string) => void;
+  dim1?: Dimension;
+  dim2?: Dimension;
+  onDim1Change?: (v: Dimension) => void;
+  onDim2Change?: (v: Dimension) => void;
 }
 
 export function AnalyticsFiltersBar({
@@ -87,7 +88,7 @@ export function AnalyticsFiltersBar({
           <select
             className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             value={dimension ?? ""}
-            onChange={(e) => onDimensionChange(e.target.value)}
+            onChange={(e) => onDimensionChange(e.target.value as Dimension)}
           >
             <option value="">All</option>
             {DIMENSIONS.map((d) => (
@@ -106,7 +107,7 @@ export function AnalyticsFiltersBar({
             <select
               className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               value={dim1 ?? ""}
-              onChange={(e) => onDim1Change(e.target.value)}
+              onChange={(e) => onDim1Change(e.target.value as Dimension)}
             >
               <option value="">Any</option>
               {DIMENSIONS.map((d) => (
@@ -121,7 +122,7 @@ export function AnalyticsFiltersBar({
             <select
               className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               value={dim2 ?? ""}
-              onChange={(e) => onDim2Change(e.target.value)}
+              onChange={(e) => onDim2Change(e.target.value as Dimension)}
             >
               <option value="">Any</option>
               {DIMENSIONS.map((d) => (
