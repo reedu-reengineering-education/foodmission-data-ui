@@ -4,12 +4,26 @@ const API_BASE =
 export function buildParams(
   filters: Record<string, string | undefined>,
 ): URLSearchParams {
+  const fromValue = filters.from ?? filters.periodStart;
+  const toValue = filters.to ?? filters.periodEnd;
+
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
+    if (key === "periodStart" || key === "periodEnd") {
+      continue;
+    }
     if (value !== undefined && value !== null && value !== "") {
       params.set(key, value);
     }
   }
+
+  if (fromValue !== undefined && fromValue !== null && fromValue !== "") {
+    params.set("from", fromValue);
+  }
+  if (toValue !== undefined && toValue !== null && toValue !== "") {
+    params.set("to", toValue);
+  }
+
   return params;
 }
 

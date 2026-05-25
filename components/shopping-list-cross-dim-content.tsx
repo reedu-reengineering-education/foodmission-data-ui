@@ -172,7 +172,9 @@ export function ShoppingListCrossDimContent() {
       />
 
       {crossPatternChart.length === 0 && crossNutritionChart.length === 0 ? (
-        <NoDataCard message="No published cross-dimensional data available." />
+        <NoDataCard
+          message={`No published cross-dimensional data for ${crossLabel}. Try Age Group x Gender (or Gender x Age Group) and keep date ranges within available published windows.`}
+        />
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2">
