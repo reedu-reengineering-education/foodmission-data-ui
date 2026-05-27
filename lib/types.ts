@@ -31,6 +31,28 @@ export interface CrossDimFilters extends AnalyticsFilters {
   dim2?: string;
 }
 
+export interface AnalyticsValueMetadata {
+  valueUnit: string;
+  entityUnit: string;
+}
+
+export interface AnalyticsCapabilities {
+  supportsNutrition: boolean;
+  supportsDemographicNutrition: boolean;
+  supportsCrossDimNutrition: boolean;
+  supportsClassification: boolean;
+  supportsRecords: boolean;
+  supportedDimensions: string[];
+  privacyThresholds: {
+    singleDimMinUsers: number;
+    crossDimMinUsers: number;
+  };
+}
+
+export interface AnalyticsSummaryMetadata {
+  capabilities?: AnalyticsCapabilities;
+}
+
 export interface DailyNutrition {
   id: string;
   date: string;
@@ -129,27 +151,18 @@ export interface MealRecord {
 }
 
 export interface DemographicNutrition extends DailyNutrition {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
+  dimensionName: string;
+  dimensionValue: string;
 }
 
 export interface DemographicClassification extends MealClassification {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
+  dimensionName: string;
+  dimensionValue: string;
 }
 
 export interface DemographicPatterns extends MealPatterns {
-  ageGroup: string | null;
-  gender: string | null;
-  educationLevel: string | null;
-  region: string | null;
-  country: string | null;
+  dimensionName: string;
+  dimensionValue: string;
 }
 
 export interface CrossDimNutrition extends Omit<DailyNutrition, "date"> {
@@ -178,6 +191,7 @@ export interface CrossDimPatterns extends Omit<MealPatterns, "date"> {
 
 export interface AnalyticsSummary {
   period: { from: string | null; to: string | null };
+  metadata?: AnalyticsSummaryMetadata;
   nutrition: {
     dataPoints: number;
     latestAvgCalories: number | null;
@@ -267,6 +281,7 @@ export interface SlSustainability {
   date: string;
   userCount: number;
   itemCount: number;
+  avgSustainabilityScore?: number | null;
   avgCarbonFootprint: number | null;
   vegetarianItemPct: number | null;
   veganItemPct: number | null;
@@ -311,6 +326,20 @@ export interface SlDemographicClassification {
   novaDistribution: Record<string, number> | null;
 }
 
+export interface SlClassification {
+  id: string;
+  date: string;
+  userCount: number;
+  vegetarianPct: number | null;
+  veganPct: number | null;
+  avgUltraProcessedPct: number | null;
+  p25UltraProcessedPct: number | null;
+  p50UltraProcessedPct: number | null;
+  p75UltraProcessedPct: number | null;
+  novaDistribution: Record<string, number> | null;
+  metadata?: AnalyticsValueMetadata;
+}
+
 export interface SlCrossDimPatterns extends Omit<SlListPatterns, "date"> {
   date: string;
   dim1Name: string;
@@ -343,6 +372,7 @@ export interface SlCrossDimClassification {
 
 export interface SlSummary {
   period: { from: string | null; to: string | null };
+  metadata?: AnalyticsSummaryMetadata;
   topItems: { name: string; frequency: number; uniqueUsers: number }[];
   topCategories: { category: string; frequency: number; uniqueUsers: number }[];
   listPatterns: {

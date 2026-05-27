@@ -67,7 +67,7 @@ export function useDashboardData(): DashboardMetrics {
 
     const countryAgg: Record<string, number> = {};
     for (const r of countryData) {
-      const iso2 = r.country ?? "Unknown";
+      const iso2 = r.dimensionValue ?? "Unknown";
       countryAgg[iso2] = Math.max(countryAgg[iso2] ?? 0, r.userCount);
     }
 
@@ -100,9 +100,9 @@ export function useDashboardData(): DashboardMetrics {
       countriesCount,
       mealTypeChart,
       countryChoro,
-      ageChart: aggregateDemographic(ageData, "ageGroup"),
-      genderChart: aggregateDemographic(genderData, "gender"),
-      educationChart: aggregateDemographic(educationData, "educationLevel"),
+      ageChart: aggregateDemographic(ageData),
+      genderChart: aggregateDemographic(genderData),
+      educationChart: aggregateDemographic(educationData),
     };
   }, [nutrition, countryData, ageData, genderData, educationData]);
 

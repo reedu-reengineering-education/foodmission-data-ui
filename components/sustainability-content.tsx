@@ -9,6 +9,13 @@ import { type Sustainability } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
+import {
+  aggregateDistribution,
+  buildGradeSeries,
+  buildGradeTrend,
+  normalizeGradeTotals,
+  SCORE_GRADES,
+} from "@/lib/metrics-transforms";
 
 export function SustainabilityContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
@@ -36,68 +43,29 @@ export function SustainabilityContent() {
   }, [fetchData]);
 
   // --- derived ---
+  const nutriScoreData = buildGradeSeries(
+    normalizeGradeTotals(
+      aggregateDistribution(data, (row) => row.nutriScoreDistribution),
+    ),
+  );
 
-  // Nutri-Score distribution (aggregate across all rows)
-  const nutriScoreAgg: Record<string, number> = {};
-  const ecoScoreAgg: Record<string, number> = {};
-  for (const row of data) {
-    if (row.nutriScoreDistribution) {
-      for (const [grade, count] of Object.entries(
-        row.nutriScoreDistribution,
-      )) {
-        nutriScoreAgg[grade] = (nutriScoreAgg[grade] ?? 0) + (count as number);
-      }
-    }
-    if (row.ecoScoreDistribution) {
-      for (const [grade, count] of Object.entries(
-        row.ecoScoreDistribution,
-      )) {
-        ecoScoreAgg[grade] = (ecoScoreAgg[grade] ?? 0) + (count as number);
-      }
-    }
-  }
+  const ecoScoreData = buildGradeSeries(
+    normalizeGradeTotals(
+      aggregateDistribution(data, (row) => row.ecoScoreDistribution),
+    ),
+  );
 
-  const GRADES = ["A", "B", "C", "D", "E"];
-  const gradeCount = (agg: Record<string, number>, g: string) =>
-    (agg[g.toLowerCase()] ?? 0) + (agg[g] ?? 0);
+  const nutriTrendData = buildGradeTrend(
+    data,
+    (row) => row.date,
+    (row) => row.nutriScoreDistribution,
+  );
 
-  const nutriScoreData = GRADES
-    .filter((g) => gradeCount(nutriScoreAgg, g) > 0)
-    .map((g) => ({ grade: g, count: gradeCount(nutriScoreAgg, g) }));
-
-  const ecoScoreData = GRADES
-    .filter((g) => gradeCount(ecoScoreAgg, g) > 0)
-    .map((g) => ({ grade: g, count: gradeCount(ecoScoreAgg, g) }));
-
-  // Nutri-Score trend over time (stacked area)
-  const nutriTrendMap: Record<string, Record<string, number>> = {};
-  for (const row of data) {
-    if (!row.nutriScoreDistribution) continue;
-    const d = row.date.slice(0, 10);
-    if (!nutriTrendMap[d]) nutriTrendMap[d] = {};
-    for (const [grade, count] of Object.entries(row.nutriScoreDistribution)) {
-      const g = grade.toUpperCase();
-      nutriTrendMap[d][g] = (nutriTrendMap[d][g] ?? 0) + (count as number);
-    }
-  }
-  const nutriTrendData = Object.entries(nutriTrendMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, grades]) => ({ date, ...grades }));
-
-  // Eco-Score trend over time (stacked area)
-  const ecoTrendMap: Record<string, Record<string, number>> = {};
-  for (const row of data) {
-    if (!row.ecoScoreDistribution) continue;
-    const d = row.date.slice(0, 10);
-    if (!ecoTrendMap[d]) ecoTrendMap[d] = {};
-    for (const [grade, count] of Object.entries(row.ecoScoreDistribution)) {
-      const g = grade.toUpperCase();
-      ecoTrendMap[d][g] = (ecoTrendMap[d][g] ?? 0) + (count as number);
-    }
-  }
-  const ecoTrendData = Object.entries(ecoTrendMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, grades]) => ({ date, ...grades }));
+  const ecoTrendData = buildGradeTrend(
+    data,
+    (row) => row.date,
+    (row) => row.ecoScoreDistribution,
+  );
 
   const gradeColors: Record<string, string> = {
     A: "var(--chart-1)",
@@ -178,9 +146,9 @@ export function SustainabilityContent() {
               <AreaChartCard
                 title="Nutri-Score Trend"
                 description="How the A–E grade distribution shifts over time"
-                config={Object.fromEntries(GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
+                config={Object.fromEntries(SCORE_GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
                 data={nutriTrendData as unknown as Record<string, unknown>[]}
-                areas={GRADES.map((g) => ({
+                areas={SCORE_GRADES.map((g) => ({
                   dataKey: g,
                   stroke: gradeColors[g],
                   fill: gradeColors[g],
@@ -196,9 +164,9 @@ export function SustainabilityContent() {
               <AreaChartCard
                 title="Eco-Score Trend"
                 description="How the A–E grade distribution shifts over time"
-                config={Object.fromEntries(GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
+                config={Object.fromEntries(SCORE_GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
                 data={ecoTrendData as unknown as Record<string, unknown>[]}
-                areas={GRADES.map((g) => ({
+                areas={SCORE_GRADES.map((g) => ({
                   dataKey: g,
                   stroke: gradeColors[g],
                   fill: gradeColors[g],

@@ -20,7 +20,7 @@ export const analyticsApi = {
     "/analytics/meal-log/public/nutrition",
   ),
   foodPopularity: createApiMethod<FoodPopularity[]>(
-    "/analytics/meal-log/public/food-popularity",
+    "/analytics/meal-log/public/popularity",
   ),
   mealPatterns: createApiMethod<MealPatterns[]>(
     "/analytics/meal-log/public/patterns",

@@ -32,15 +32,23 @@ import { DIMENSION_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
+import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 
 export function NutritionAnalyticsContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension: demoDimension, setDimension: setDemoDimension } = useAnalyticsFiltersWithDimension();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DailyNutrition[]>([]);
   const [demoData, setDemoData] = useState<DemographicNutrition[]>([]);
+  const { capabilities } = useSourceCapabilities("meal-log");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    if (!capabilities.supportsNutrition) {
+      setData([]);
+      setDemoData([]);
+      setLoading(false);
+      return;
+    }
     try {
       const filters = {
         periodStart: periodStart || undefined,
@@ -61,7 +69,7 @@ export function NutritionAnalyticsContent() {
     } finally {
       setLoading(false);
     }
-  }, [periodStart, periodEnd, typeOfMeal, demoDimension]);
+  }, [periodStart, periodEnd, typeOfMeal, demoDimension, capabilities.supportsNutrition]);
 
   useEffect(() => {
     fetchData();
@@ -161,7 +169,6 @@ export function NutritionAnalyticsContent() {
   }));
 
   // Demographic breakdown
-  const dimKey = demoDimension as keyof DemographicNutrition;
   const demoGrouped = demoData.reduce<
     Record<
       string,
@@ -174,7 +181,7 @@ export function NutritionAnalyticsContent() {
       }
     >
   >((acc, row) => {
-    const val = (row[dimKey] as string) ?? "Unknown";
+    const val = row.dimensionValue ?? "Unknown";
     if (!acc[val])
       acc[val] = { calories: 0, proteins: 0, fat: 0, carbs: 0, count: 0 };
     acc[val].calories += (row.avgCalories ?? 0) * row.mealCount;
@@ -251,7 +258,9 @@ export function NutritionAnalyticsContent() {
         onDimensionChange={setDemoDimension}
       />
 
-      {data.length === 0 ? (
+      {!capabilities.supportsNutrition ? (
+        <NoDataCard message="Nutrition analytics is not available for this source." />
+      ) : data.length === 0 ? (
         <NoDataCard message="No published nutrition data available for the selected filters." />
       ) : (
         <>

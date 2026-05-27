@@ -13,9 +13,11 @@ import { DIMENSION_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithCrossDim } from "@/hooks/use-analytics-filters";
+import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 
 export function DemographicInsightsContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dim1, setDim1, dim2, setDim2 } = useAnalyticsFiltersWithCrossDim();
+  const { capabilities } = useSourceCapabilities("meal-log");
   const [loading, setLoading] = useState(true);
   const [nutrition, setNutrition] = useState<CrossDimNutrition[]>([]);
   const [classification, setClassification] = useState<
@@ -33,8 +35,11 @@ export function DemographicInsightsContent() {
         dim1: dim1 || undefined,
         dim2: dim2 || undefined,
       };
+      const nutritionRequest = capabilities.supportsCrossDimNutrition
+        ? analyticsApi.crossDimNutrition(filters)
+        : Promise.resolve([] as CrossDimNutrition[]);
       const [n, c, p] = await Promise.all([
-        analyticsApi.crossDimNutrition(filters),
+        nutritionRequest,
         analyticsApi.crossDimClassification(filters),
         analyticsApi.crossDimPatterns(filters),
       ]);
@@ -46,7 +51,7 @@ export function DemographicInsightsContent() {
     } finally {
       setLoading(false);
     }
-  }, [periodStart, periodEnd, typeOfMeal, dim1, dim2]);
+  }, [periodStart, periodEnd, typeOfMeal, dim1, dim2, capabilities.supportsCrossDimNutrition]);
 
   useEffect(() => {
     fetchData();
@@ -206,6 +211,9 @@ export function DemographicInsightsContent() {
               showLegend
               footer="Cross-dimensional groups with <20 users suppressed for privacy"
             />
+          )}
+          {!capabilities.supportsCrossDimNutrition && (
+            <NoDataCard message="Cross-dimensional nutrition is not available for this source." />
           )}
 
           <div className="grid gap-4 md:grid-cols-2">

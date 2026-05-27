@@ -9,11 +9,11 @@ import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import {
   type SlDemographicPatterns,
-  type SlDemographicNutrition,
   type SlDemographicClassification,
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
+import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 
 const NOVA_GROUPS = ["1", "2", "3", "4"];
 
@@ -29,8 +29,8 @@ export function ShoppingListDemographicContent() {
 
   const [loading, setLoading] = useState(true);
   const [demoPatterns, setDemoPatterns] = useState<SlDemographicPatterns[]>([]);
-  const [demoNutrition, setDemoNutrition] = useState<SlDemographicNutrition[]>([]);
   const [demoClassification, setDemoClassification] = useState<SlDemographicClassification[]>([]);
+  const { capabilities } = useSourceCapabilities("shopping-list");
 
   const filters = useMemo(
     () => ({
@@ -43,12 +43,8 @@ export function ShoppingListDemographicContent() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [dp, dn, dc] = await Promise.all([
+      const [dp, dc] = await Promise.all([
         shoppingListApi.demographicPatterns({
-          ...filters,
-          dimension: dimension || undefined,
-        }),
-        shoppingListApi.demographicNutrition({
           ...filters,
           dimension: dimension || undefined,
         }),
@@ -58,7 +54,6 @@ export function ShoppingListDemographicContent() {
         }),
       ]);
       setDemoPatterns(dp);
-      setDemoNutrition(dn);
       setDemoClassification(dc);
     } catch (e) {
       console.error("Failed to fetch demographic insights", e);
@@ -93,23 +88,6 @@ export function ShoppingListDemographicContent() {
       totalLists: v.totalLists,
     }))
     .sort((a, b) => b.totalLists - a.totalLists);
-
-  const demoNutritionByDim = Object.values(
-    demoNutrition.reduce<
-      Record<string, { label: string; avgCaloriesPer100g: number; count: number }>
-    >((acc, r) => {
-      const label = r.dimensionValue === "__null__" ? "Not specified" : r.dimensionValue;
-      if (!acc[label]) acc[label] = { label, avgCaloriesPer100g: 0, count: 0 };
-      acc[label].avgCaloriesPer100g += r.avgCaloriesPer100g ?? 0;
-      acc[label].count++;
-      return acc;
-    }, {})
-  )
-    .map((v) => ({
-      label: v.label,
-      avgCaloriesPer100g: Math.round(v.avgCaloriesPer100g / (v.count || 1)),
-    }))
-    .sort((a, b) => b.avgCaloriesPer100g - a.avgCaloriesPer100g);
 
   const demoUltraProcessedByDim = Object.values(
     demoClassification.reduce<
@@ -179,7 +157,7 @@ export function ShoppingListDemographicContent() {
         onDimensionChange={setDimension}
       />
 
-      {demoPatternsByDim.length === 0 && demoNutritionByDim.length === 0 ? (
+      {demoPatternsByDim.length === 0 && demoUltraProcessedByDim.length === 0 && novaData.length === 0 ? (
         <NoDataCard message="No published demographic insights data available." />
       ) : (
         <>
@@ -196,17 +174,8 @@ export function ShoppingListDemographicContent() {
                 height="h-[300px]"
               />
             )}
-            {demoNutritionByDim.length > 0 && (
-              <HorizontalBarChartCard
-                title={`Avg Energy by ${dimLabel}`}
-                description="Average kcal per 100g"
-                config={{ avgCaloriesPer100g: { label: "Avg kcal / 100g", color: "var(--chart-3)" } }}
-                data={demoNutritionByDim as unknown as Record<string, unknown>[]}
-                bars={[{ dataKey: "avgCaloriesPer100g", fill: "var(--chart-3)" }]}
-                yAxisKey="label"
-                yAxisWidth={120}
-                height="h-[300px]"
-              />
+            {!capabilities.supportsDemographicNutrition && (
+              <NoDataCard message="Nutrition by demographics is not available for Shopping List. Use Meal Log for consumed nutrition analytics." />
             )}
           </div>
 

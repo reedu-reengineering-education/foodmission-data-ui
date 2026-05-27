@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
+import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 
 // FOODMISSION Data Dashboard Navigation
 const data = {
@@ -155,6 +156,51 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     email: string;
     avatar: string;
   }>();
+  const { capabilities: mealLogCapabilities } = useSourceCapabilities("meal-log");
+  const { capabilities: shoppingListCapabilities } =
+    useSourceCapabilities("shopping-list");
+
+  const mealLogItems = [
+    ...(mealLogCapabilities.supportsNutrition
+      ? [{ title: "Nutrition", url: "/meal-log/nutrition-analytics" }]
+      : []),
+    { title: "Food Popularity", url: "/meal-log/food-popularity" },
+    { title: "Meal Patterns", url: "/meal-log/meal-patterns" },
+    { title: "Sustainability", url: "/meal-log/sustainability" },
+    ...(mealLogCapabilities.supportsClassification
+      ? [{ title: "Meal Classification", url: "/meal-log/meal-classification" }]
+      : []),
+    { title: "Demographic Insights", url: "/meal-log/demographic-insights" },
+  ];
+
+  const shoppingListItems = [
+    { title: "Item Popularity", url: "/shopping-list/item-popularity" },
+    { title: "List Patterns", url: "/shopping-list/list-patterns" },
+    ...(shoppingListCapabilities.supportsNutrition
+      ? [{ title: "Nutrition Profile", url: "/shopping-list/nutrition-profile" }]
+      : []),
+    { title: "Sustainability", url: "/shopping-list/sustainability" },
+    { title: "Demographic Insights", url: "/shopping-list/demographic-insights" },
+    { title: "Cross-dimensional", url: "/shopping-list/cross-dimensional" },
+  ];
+
+  const navMain = [
+    ...data.navMain.slice(0, 1),
+    {
+      title: "Meal Log",
+      url: mealLogItems[0]?.url ?? "/meal-log/food-popularity",
+      icon: Soup,
+      items: mealLogItems,
+    },
+    data.navMain[2],
+    {
+      title: "Shopping List",
+      url: shoppingListItems[0]?.url ?? "/shopping-list/item-popularity",
+      icon: ShoppingCart,
+      items: shoppingListItems,
+    },
+    ...data.navMain.slice(4),
+  ];
 
   useEffect(() => {
     async function fetchUser() {
@@ -179,7 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} label="Citizen Science Data" />
+        <NavMain items={navMain} label="Citizen Science Data" />
         <NavMain items={data.appAnalytics} label="Analytics" />
         <NavMain items={data.personalData} label="Personal Data" />
         <NavProjects projects={data.research} />

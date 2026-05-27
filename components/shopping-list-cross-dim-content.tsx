@@ -8,12 +8,12 @@ import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import {
   type SlCrossDimPatterns,
-  type SlCrossDimNutrition,
   type SlCrossDimClassification,
   Dimension,
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
+import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 
 export function ShoppingListCrossDimContent() {
   const {
@@ -29,8 +29,8 @@ export function ShoppingListCrossDimContent() {
 
   const [loading, setLoading] = useState(true);
   const [crossPatterns, setCrossPatterns] = useState<SlCrossDimPatterns[]>([]);
-  const [crossNutrition, setCrossNutrition] = useState<SlCrossDimNutrition[]>([]);
   const [crossClassification, setCrossClassification] = useState<SlCrossDimClassification[]>([]);
+  const { capabilities } = useSourceCapabilities("shopping-list");
 
   const filters = useMemo(
     () => ({
@@ -43,13 +43,8 @@ export function ShoppingListCrossDimContent() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [cp, cn, cc] = await Promise.all([
+      const [cp, cc] = await Promise.all([
         shoppingListApi.crossDimPatterns({
-          ...filters,
-          dim1: dim1 || undefined,
-          dim2: dim2 || undefined,
-        }),
-        shoppingListApi.crossDimNutrition({
           ...filters,
           dim1: dim1 || undefined,
           dim2: dim2 || undefined,
@@ -61,7 +56,6 @@ export function ShoppingListCrossDimContent() {
         }),
       ]);
       setCrossPatterns(cp);
-      setCrossNutrition(cn);
       setCrossClassification(cc);
     } catch (e) {
       console.error("Failed to fetch cross-dimensional data", e);
@@ -98,23 +92,6 @@ export function ShoppingListCrossDimContent() {
         Math.round((v.avgItemsPerList / (v.count || 1)) * 10) / 10,
     }))
     .sort((a, b) => b.avgItemsPerList - a.avgItemsPerList);
-
-  const crossNutritionChart = Object.values(
-    crossNutrition.reduce<
-      Record<string, { label: string; avgCaloriesPer100g: number; count: number }>
-    >((acc, r) => {
-      const label = `${r.dim1Value} / ${r.dim2Value}`;
-      if (!acc[label]) acc[label] = { label, avgCaloriesPer100g: 0, count: 0 };
-      acc[label].avgCaloriesPer100g += r.avgCaloriesPer100g ?? 0;
-      acc[label].count++;
-      return acc;
-    }, {})
-  )
-    .map((v) => ({
-      label: v.label,
-      avgCaloriesPer100g: Math.round(v.avgCaloriesPer100g / (v.count || 1)),
-    }))
-    .sort((a, b) => b.avgCaloriesPer100g - a.avgCaloriesPer100g);
 
   const crossClassificationChart = Object.values(
     crossClassification.reduce<
@@ -171,7 +148,7 @@ export function ShoppingListCrossDimContent() {
         onDim2Change={setDim2}
       />
 
-      {crossPatternChart.length === 0 && crossNutritionChart.length === 0 ? (
+      {crossPatternChart.length === 0 && crossClassificationChart.length === 0 ? (
         <NoDataCard
           message={`No published cross-dimensional data for ${crossLabel}. Try Age Group x Gender (or Gender x Age Group) and keep date ranges within available published windows.`}
         />
@@ -190,17 +167,8 @@ export function ShoppingListCrossDimContent() {
                 footer="Groups with <20 users suppressed for privacy"
               />
             )}
-            {crossNutritionChart.length > 0 && (
-              <HorizontalBarChartCard
-                title={`Avg Energy by ${crossLabel}`}
-                description="Average kcal per 100g per group combination"
-                config={{ avgCaloriesPer100g: { label: "Avg kcal / 100g", color: "var(--chart-3)" } }}
-                data={crossNutritionChart as unknown as Record<string, unknown>[]}
-                bars={[{ dataKey: "avgCaloriesPer100g", fill: "var(--chart-3)" }]}
-                yAxisKey="label"
-                yAxisWidth={160}
-                footer="Groups with <20 users suppressed for privacy"
-              />
+            {!capabilities.supportsCrossDimNutrition && (
+              <NoDataCard message="Cross-dimensional nutrition is not available for Shopping List. Use Meal Log for consumed nutrition analytics." />
             )}
           </div>
 

@@ -5,13 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function aggregateDemographic<T extends { userCount: number }>(
+export function aggregateDemographic<T extends { userCount: number; dimensionValue?: string | null }>(
   rows: T[],
-  dimKey: keyof T,
+  dimKey?: keyof T,
 ): { label: string; users: number }[] {
   const agg: Record<string, number> = {};
   for (const r of rows) {
-    const val = (r[dimKey] as string) ?? "Unknown";
+    const rawValue =
+      r.dimensionValue ??
+      (dimKey ? ((r[dimKey] as string | null | undefined) ?? "Unknown") : "Unknown");
+    const val = rawValue ?? "Unknown";
     const label = val === "__null__" ? "Not specified" : val;
     agg[label] = Math.max(agg[label] ?? 0, r.userCount);
   }

@@ -13,21 +13,15 @@ import {
 } from "@/components/ui/card";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
-import { type SlSustainability } from "@/lib/types";
+import { type SlClassification, type SlSustainability } from "@/lib/types";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
-
-const GRADES = ["A", "B", "C", "D", "E"];
-
-function normalizeGradeAgg(
-  raw: Record<string, number>
-): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const [k, v] of Object.entries(raw)) {
-    const key = k.trim().toUpperCase();
-    out[key] = (out[key] ?? 0) + v;
-  }
-  return out;
-}
+import {
+  aggregateDistribution,
+  buildGradeSeries,
+  buildNovaSeries,
+  buildShoppingSustainabilityTrend,
+  normalizeGradeTotals,
+} from "@/lib/metrics-transforms";
 
 export function ShoppingListSustainabilityContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd } =
@@ -35,6 +29,7 @@ export function ShoppingListSustainabilityContent() {
 
   const [loading, setLoading] = useState(true);
   const [sustainability, setSustainability] = useState<SlSustainability[]>([]);
+  const [classification, setClassification] = useState<SlClassification[]>([]);
 
   const filters = useMemo(
     () => ({
@@ -47,8 +42,12 @@ export function ShoppingListSustainabilityContent() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const s = await shoppingListApi.sustainability(filters);
+      const [s, c] = await Promise.all([
+        shoppingListApi.sustainability(filters),
+        shoppingListApi.classification(filters),
+      ]);
       setSustainability(s);
+      setClassification(c);
     } catch (e) {
       console.error("Failed to fetch sustainability", e);
     } finally {
@@ -60,53 +59,39 @@ export function ShoppingListSustainabilityContent() {
     fetchData();
   }, [fetchData]);
 
-  const nutriScoreAggRaw: Record<string, number> = {};
-  const ecoScoreAggRaw: Record<string, number> = {};
-  const novaAggRaw: Record<string, number> = {};
-  for (const row of sustainability) {
-    if (row.nutriScoreDistribution) {
-      for (const [g, count] of Object.entries(row.nutriScoreDistribution)) {
-        nutriScoreAggRaw[g] = (nutriScoreAggRaw[g] ?? 0) + (count as number);
-      }
-    }
-    if (row.ecoScoreDistribution) {
-      for (const [g, count] of Object.entries(row.ecoScoreDistribution)) {
-        ecoScoreAggRaw[g] = (ecoScoreAggRaw[g] ?? 0) + (count as number);
-      }
-    }
-    if (row.novaDistribution) {
-      for (const [g, count] of Object.entries(row.novaDistribution)) {
-        novaAggRaw[g] = (novaAggRaw[g] ?? 0) + (count as number);
-      }
-    }
-  }
-  const nutriScoreAgg = normalizeGradeAgg(nutriScoreAggRaw);
-  const ecoScoreAgg = normalizeGradeAgg(ecoScoreAggRaw);
-  const nutriScoreData = GRADES.map((g) => ({
-    grade: g,
-    count: nutriScoreAgg[g] ?? 0,
-  })).filter((x) => x.count > 0);
-  const ecoScoreData = GRADES.map((g) => ({
-    grade: g,
-    count: ecoScoreAgg[g] ?? 0,
-  })).filter((x) => x.count > 0);
-  const novaData = ["1", "2", "3", "4"].map((g) => ({
-    group: `Group ${g}`,
-    count: novaAggRaw[g] ?? 0,
-  })).filter((x) => x.count > 0);
+  const nutriScoreData = buildGradeSeries(
+    normalizeGradeTotals(
+      aggregateDistribution(sustainability, (row) => row.nutriScoreDistribution),
+    ),
+  );
+  const ecoScoreData = buildGradeSeries(
+    normalizeGradeTotals(
+      aggregateDistribution(sustainability, (row) => row.ecoScoreDistribution),
+    ),
+  );
+  const novaData = buildNovaSeries(classification, (row) => row.novaDistribution);
 
-  // Trend data for carbon footprint, vegan/veg pct, ultra-processed
-  const sustainTrend = [...sustainability]
+  const sustainTrend = buildShoppingSustainabilityTrend(
+    sustainability.map((row) => ({
+      ...row,
+      vegetarianItemPct: null,
+      veganItemPct: null,
+      avgUltraProcessedPct: null,
+    })),
+  );
+
+  const classificationTrend = [...classification]
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map((r) => ({
-      date: r.date.slice(0, 10),
-      avgCarbonFootprint: Math.round((r.avgCarbonFootprint ?? 0) * 100) / 100,
-      vegetarianItemPct: Math.round((r.vegetarianItemPct ?? 0) * 10) / 10,
-      veganItemPct: Math.round((r.veganItemPct ?? 0) * 10) / 10,
-      avgUltraProcessedPct: Math.round((r.avgUltraProcessedPct ?? 0) * 10) / 10,
+    .map((row) => ({
+      date: row.date.slice(0, 10),
+      vegetarianPct: Math.round((row.vegetarianPct ?? 0) * 10) / 10,
+      veganPct: Math.round((row.veganPct ?? 0) * 10) / 10,
+      avgUltraProcessedPct: Math.round((row.avgUltraProcessedPct ?? 0) * 10) / 10,
     }));
 
   const latest = [...sustainability].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
+  const latestClassification =
+    [...classification].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
 
   if (loading) {
     return (
@@ -139,18 +124,20 @@ export function ShoppingListSustainabilityContent() {
         showTypeOfMeal={false}
       />
 
-      {nutriScoreData.length === 0 && ecoScoreData.length === 0 && novaData.length === 0 && sustainTrend.length === 0 ? (
+      {nutriScoreData.length === 0 && ecoScoreData.length === 0 && novaData.length === 0 && sustainTrend.length === 0 && classificationTrend.length === 0 ? (
         <NoDataCard message="No published sustainability data available." />
       ) : (
         <>
           {/* KPI cards */}
-          {latest && (
+          {(latest || latestClassification) && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="pb-2"><CardDescription>Avg CO₂ / Item</CardDescription></CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {latest.avgCarbonFootprint !== null ? `${Math.round((latest.avgCarbonFootprint ?? 0) * 100) / 100} kg` : "—"}
+                    {latest?.avgCarbonFootprint != null
+                      ? `${Math.round((latest.avgCarbonFootprint ?? 0) * 100) / 100} kg`
+                      : "—"}
                   </div>
                   <p className="text-xs text-muted-foreground">Latest period, per item</p>
                 </CardContent>
@@ -159,7 +146,9 @@ export function ShoppingListSustainabilityContent() {
                 <CardHeader className="pb-2"><CardDescription>Vegetarian Items</CardDescription></CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {latest.vegetarianItemPct !== null ? `${Math.round((latest.vegetarianItemPct ?? 0) * 10) / 10}%` : "—"}
+                    {latestClassification?.vegetarianPct != null
+                      ? `${Math.round((latestClassification.vegetarianPct ?? 0) * 10) / 10}%`
+                      : "—"}
                   </div>
                   <p className="text-xs text-muted-foreground">Latest period</p>
                 </CardContent>
@@ -168,7 +157,9 @@ export function ShoppingListSustainabilityContent() {
                 <CardHeader className="pb-2"><CardDescription>Vegan Items</CardDescription></CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {latest.veganItemPct !== null ? `${Math.round((latest.veganItemPct ?? 0) * 10) / 10}%` : "—"}
+                    {latestClassification?.veganPct != null
+                      ? `${Math.round((latestClassification.veganPct ?? 0) * 10) / 10}%`
+                      : "—"}
                   </div>
                   <p className="text-xs text-muted-foreground">Latest period</p>
                 </CardContent>
@@ -177,7 +168,9 @@ export function ShoppingListSustainabilityContent() {
                 <CardHeader className="pb-2"><CardDescription>Ultra-processed (NOVA 4)</CardDescription></CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {latest.avgUltraProcessedPct !== null ? `${Math.round((latest.avgUltraProcessedPct ?? 0) * 10) / 10}%` : "—"}
+                    {latestClassification?.avgUltraProcessedPct != null
+                      ? `${Math.round((latestClassification.avgUltraProcessedPct ?? 0) * 10) / 10}%`
+                      : "—"}
                   </div>
                   <p className="text-xs text-muted-foreground">Latest period</p>
                 </CardContent>
@@ -227,26 +220,28 @@ export function ShoppingListSustainabilityContent() {
 
           {/* Trends */}
           {sustainTrend.length > 1 && (
+            <AreaChartCard
+              title="Carbon Footprint Trend"
+              description="Average CO₂ per item over time (kg)"
+              config={{ avgCarbonFootprint: { label: "Avg CO₂ (kg)", color: "var(--chart-3)" } }}
+              data={sustainTrend as unknown as Record<string, unknown>[]}
+              areas={[{ dataKey: "avgCarbonFootprint", stroke: "var(--chart-3)", fill: "var(--chart-3)", fillOpacity: 0.2 }]}
+            />
+          )}
+          {classificationTrend.length > 1 && (
             <>
-              <AreaChartCard
-                title="Carbon Footprint Trend"
-                description="Average CO₂ per item over time (kg)"
-                config={{ avgCarbonFootprint: { label: "Avg CO₂ (kg)", color: "var(--chart-3)" } }}
-                data={sustainTrend as unknown as Record<string, unknown>[]}
-                areas={[{ dataKey: "avgCarbonFootprint", stroke: "var(--chart-3)", fill: "var(--chart-3)", fillOpacity: 0.2 }]}
-              />
               <AreaChartCard
                 title="Diet & Processing Trends"
                 description="Vegetarian, vegan, and ultra-processed item % over time"
                 config={{
-                  vegetarianItemPct: { label: "Vegetarian %", color: "var(--chart-2)" },
-                  veganItemPct: { label: "Vegan %", color: "var(--chart-4)" },
+                  vegetarianPct: { label: "Vegetarian %", color: "var(--chart-2)" },
+                  veganPct: { label: "Vegan %", color: "var(--chart-4)" },
                   avgUltraProcessedPct: { label: "Ultra-processed %", color: "var(--chart-1)" },
                 }}
-                data={sustainTrend as unknown as Record<string, unknown>[]}
+                data={classificationTrend as unknown as Record<string, unknown>[]}
                 areas={[
-                  { dataKey: "vegetarianItemPct", stroke: "var(--chart-2)", fill: "var(--chart-2)", fillOpacity: 0.15 },
-                  { dataKey: "veganItemPct", stroke: "var(--chart-4)", fill: "var(--chart-4)", fillOpacity: 0.15 },
+                  { dataKey: "vegetarianPct", stroke: "var(--chart-2)", fill: "var(--chart-2)", fillOpacity: 0.15 },
+                  { dataKey: "veganPct", stroke: "var(--chart-4)", fill: "var(--chart-4)", fillOpacity: 0.15 },
                   { dataKey: "avgUltraProcessedPct", stroke: "var(--chart-1)", fill: "var(--chart-1)", fillOpacity: 0.1 },
                 ]}
                 showLegend

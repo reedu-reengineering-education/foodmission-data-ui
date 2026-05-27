@@ -1,6 +1,7 @@
 import { createApiMethod } from "./client";
 import type {
   SlCategoryPopularity,
+  SlClassification,
   SlCrossDimClassification,
   SlCrossDimNutrition,
   SlCrossDimPatterns,
@@ -17,19 +18,22 @@ import type {
 
 export const shoppingListApi = {
   itemPopularity: createApiMethod<SlItemPopularity[]>(
-    "/analytics/shopping-list/public/item-popularity",
+    "/analytics/shopping-list/public/popularity",
   ),
   categoryPopularity: createApiMethod<SlCategoryPopularity[]>(
     "/analytics/shopping-list/public/category-popularity",
   ),
   listPatterns: createApiMethod<SlListPatterns[]>(
-    "/analytics/shopping-list/public/list-patterns",
+    "/analytics/shopping-list/public/patterns",
   ),
   nutritionProfile: createApiMethod<SlNutritionProfile[]>(
     "/analytics/shopping-list/public/nutrition-profile",
   ),
   sustainability: createApiMethod<SlSustainability[]>(
     "/analytics/shopping-list/public/sustainability",
+  ),
+  classification: createApiMethod<SlClassification[]>(
+    "/analytics/shopping-list/public/classification",
   ),
   foodGroups: createApiMethod<SlFoodGroups[]>(
     "/analytics/shopping-list/public/food-groups",
