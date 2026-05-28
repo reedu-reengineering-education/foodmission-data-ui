@@ -1,8 +1,17 @@
-import { genericOAuthClient } from "better-auth/client/plugins"
-import { createAuthClient } from "better-auth/react"
+export interface SessionUser {
+  sub: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: "admin" | "user";
+}
 
-export const authClient = createAuthClient({
-    plugins: [
-        genericOAuthClient()
-    ]
-})
+export async function getClientSession(): Promise<SessionUser | null> {
+  try {
+    const res = await fetch("/api/auth/session");
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}

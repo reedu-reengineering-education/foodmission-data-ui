@@ -221,9 +221,7 @@ function CountryChoropleth({
         const isDarkNow = document.documentElement.classList.contains("dark");
         const bg = isDarkNow ? "hsl(220, 14%, 16%)" : "hsl(0, 0%, 100%)";
         const fg = isDarkNow ? "hsl(210, 20%, 90%)" : "hsl(220, 14%, 16%)";
-        const border = isDarkNow
-          ? "hsl(220, 14%, 25%)"
-          : "hsl(220, 14%, 85%)";
+        const border = isDarkNow ? "hsl(220, 14%, 25%)" : "hsl(220, 14%, 85%)";
         popup
           .setLngLat(e.lngLat)
           .setHTML(
@@ -302,14 +300,6 @@ export function DashboardContent() {
       setAgeData(byAge);
       setGenderData(byGender);
       setEducationData(byEdu);
-      console.log("[Dashboard] Fetched data:", {
-        nutrition: nutr.length,
-        countries: byCountry.length,
-        age: byAge.length,
-        gender: byGender.length,
-        edu: byEdu.length,
-        sampleCountry: byCountry[0],
-      });
     } catch (e) {
       console.error("Failed to fetch dashboard data", e);
     } finally {
@@ -372,8 +362,6 @@ export function DashboardContent() {
       };
     })
     .sort((a, b) => b.users - a.users);
-
-  console.log("[Dashboard] countryChoro:", countryChoro);
 
   // Demographic aggregations helper
   function aggregateDemographic(

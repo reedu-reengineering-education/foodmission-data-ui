@@ -1,17 +1,58 @@
-import { betterAuth } from "better-auth";
-import { genericOAuth, keycloak } from "better-auth/plugins"
+import { jwtVerify, SignJWT } from "jose";
+import { cookies } from "next/headers";
 
+export const SESSION_COOKIE = "fm_session";
+export const REFRESH_COOKIE = "fm_refresh";
 
-export const auth = betterAuth({
-    plugins: [
-        genericOAuth({
-            config: [
-                keycloak({
-                    clientId: process.env.KEYCLOAK_CLIENT_ID ?? (() => { throw new Error("KEYCLOAK_CLIENT_ID is not set"); })(),
-                    clientSecret: process.env.KEYCLOAK_CLIENT_SECRET ?? (() => { throw new Error("KEYCLOAK_CLIENT_SECRET is not set"); })(),
-                    issuer: process.env.KEYCLOAK_ISSUER ?? (() => { throw new Error("KEYCLOAK_ISSUER is not set"); })(),
-                }),
-            ]
-        })
-    ]
-});
+const sessionSecret = new TextEncoder().encode(
+  process.env.BETTER_AUTH_SECRET ?? "change-me-in-production",
+);
+
+export interface SessionUser {
+  sub: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: "admin" | "user";
+  createdAt: Date;
+  accessToken?: string;
+}
+
+export async function getSession(): Promise<{ user: SessionUser } | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, sessionSecret);
+    return {
+      user: {
+        sub: payload.sub!,
+        name: payload.name as string,
+        email: payload.email as string,
+        image: (payload.image as string | null) ?? null,
+        role: (payload.role as "admin" | "user") ?? "user",
+        createdAt: new Date((payload.iat ?? 0) * 1000),
+        accessToken: (payload.accessToken as string | undefined) ?? undefined,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function createSessionToken(
+  user: Omit<SessionUser, "createdAt">,
+): Promise<string> {
+  return new SignJWT({
+    sub: user.sub,
+    name: user.name,
+    email: user.email,
+    image: user.image,
+    role: user.role,
+    accessToken: user.accessToken ?? null,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(sessionSecret);
+}
