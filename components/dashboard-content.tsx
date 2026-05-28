@@ -15,6 +15,7 @@ import { BarChartCard } from "@/components/ui/bar-chart-card";
 import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { DIMENSION_LABELS } from "@/lib/constants";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 // ── Sub-components ────────────────────────────────────────
 
@@ -242,7 +243,9 @@ export function DashboardContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">FOODMISSION Overview</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.dashboardOverview}
+        </h2>
         <p className="text-muted-foreground">
           Real-time analytics from published aggregation data
         </p>

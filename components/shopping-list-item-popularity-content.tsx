@@ -27,6 +27,7 @@ import {
   type SlListPatterns,
 } from "@/lib/types";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function ShoppingListItemPopularityContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd } =
@@ -153,15 +154,29 @@ export function ShoppingListItemPopularityContent() {
     }, {})
   ).sort((a, b) => b.frequency - a.frequency);
 
-  // Item type breakdown
-  const itemTypeAgg = items.reduce<Record<string, number>>((acc, r) => {
-    acc[r.itemType] = (acc[r.itemType] ?? 0) + r.frequency;
-    return acc;
-  }, {});
-  const itemTypeData = Object.entries(itemTypeAgg).map(([type, frequency]) => ({
-    name: type === "food_product" ? "Branded Product" : "Generic Food",
-    frequency,
-  }));
+  // Item type breakdown: use backend percentages from list-patterns when available.
+  const latestPattern =
+    [...patterns].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
+  const itemTypeData =
+    latestPattern?.foodProductPct != null && latestPattern?.genericFoodPct != null
+      ? [
+          { name: "Branded Product", frequency: latestPattern.foodProductPct },
+          { name: "Generic Food", frequency: latestPattern.genericFoodPct },
+        ]
+      : Object.entries(
+          items.reduce<Record<string, number>>((acc, r) => {
+            acc[r.itemType] = (acc[r.itemType] ?? 0) + r.frequency;
+            return acc;
+          }, {})
+        ).map(([type, frequency]) => ({
+          name:
+            type === "food_product"
+              ? "Branded Product"
+              : type === "generic_food"
+                ? "Generic Food"
+                : type,
+          frequency,
+        }));
 
   const totalLists = patterns.reduce((s, r) => s + r.totalLists, 0);
   const uniqueItemCount = topItems.length;
@@ -184,7 +199,9 @@ export function ShoppingListItemPopularityContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Item Popularity</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.shoppingList.itemPopularity}
+        </h2>
         <p className="text-muted-foreground">
           Most listed items, categories and food groups
         </p>

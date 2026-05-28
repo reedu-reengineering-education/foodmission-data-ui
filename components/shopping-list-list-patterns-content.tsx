@@ -31,6 +31,7 @@ import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import { type SlListPatterns } from "@/lib/types";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function ShoppingListListPatternsContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd } =
@@ -98,7 +99,9 @@ export function ShoppingListListPatternsContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">List Patterns</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.shoppingList.listPatterns}
+        </h2>
         <p className="text-muted-foreground">
           How shopping lists are built and completed over time
         </p>

@@ -1,9 +1,10 @@
 import { ShoppingListItemPopularityContent } from "@/components/shopping-list-item-popularity-content";
 import { PageShell } from "@/components/page-shell";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export default function ShoppingListItemPopularityPage() {
   return (
-    <PageShell title="Item Popularity">
+    <PageShell title={PAGE_TITLES.shoppingList.itemPopularity}>
       <ShoppingListItemPopularityContent />
     </PageShell>
   );

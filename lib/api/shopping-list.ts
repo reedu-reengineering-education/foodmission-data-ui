@@ -18,7 +18,7 @@ import type {
 
 export const shoppingListApi = {
   itemPopularity: createApiMethod<SlItemPopularity[]>(
-    "/analytics/shopping-list/public/popularity",
+    "/analytics/shopping-list/public/item-popularity",
   ),
   categoryPopularity: createApiMethod<SlCategoryPopularity[]>(
     "/analytics/shopping-list/public/category-popularity",

@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
 import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function NutritionAnalyticsContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension: demoDimension, setDimension: setDemoDimension } = useAnalyticsFiltersWithDimension();
@@ -236,7 +237,7 @@ export function NutritionAnalyticsContent() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
-            Nutrition Analytics
+            {PAGE_TITLES.mealLog.nutritionAnalytics}
           </h2>
           <p className="text-muted-foreground">
             Daily nutrition averages, macro breakdowns &amp; demographic

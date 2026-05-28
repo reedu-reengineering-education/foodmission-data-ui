@@ -1,9 +1,10 @@
 import { SocialInfluenceContent } from "@/components/social-influence-content";
 import { PageShell } from "@/components/page-shell";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export default function SocialInfluencePage() {
   return (
-    <PageShell title="Social Influence Analysis">
+    <PageShell title={PAGE_TITLES.socialInfluenceAnalysis}>
       <SocialInfluenceContent />
     </PageShell>
   );

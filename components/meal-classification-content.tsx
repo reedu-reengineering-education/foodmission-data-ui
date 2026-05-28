@@ -38,6 +38,7 @@ import {
   buildWeightedClassificationByGroup,
 } from "@/lib/metrics-transforms";
 import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function MealClassificationContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension, setDimension } = useAnalyticsFiltersWithDimension();
@@ -146,7 +147,7 @@ export function MealClassificationContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Meal Classification
+          {PAGE_TITLES.mealLog.mealClassification}
         </h2>
         <p className="text-muted-foreground">
           Vegetarian/vegan rates, ultra-processed % &amp; NOVA food processing

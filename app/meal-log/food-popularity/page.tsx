@@ -1,9 +1,10 @@
 import { FoodPopularityContent } from "@/components/food-popularity-content";
 import { PageShell } from "@/components/page-shell";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export default function FoodPopularityPage() {
   return (
-    <PageShell title="Food Popularity">
+    <PageShell title={PAGE_TITLES.mealLog.foodPopularity}>
       <FoodPopularityContent />
     </PageShell>
   );

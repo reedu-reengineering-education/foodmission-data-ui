@@ -14,6 +14,7 @@ import {
 import { DIMENSION_LABELS } from "@/lib/constants";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
 import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 const NOVA_GROUPS = ["1", "2", "3", "4"];
 
@@ -138,7 +139,7 @@ export function ShoppingListDemographicContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Demographic Insights
+          {PAGE_TITLES.shoppingList.demographicInsights}
         </h2>
         <p className="text-muted-foreground">
           Shopping list patterns and nutrition by demographic group

@@ -15,6 +15,7 @@ import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import { type SlNutritionProfile } from "@/lib/types";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function ShoppingListNutritionContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd } =
@@ -91,7 +92,9 @@ export function ShoppingListNutritionContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Nutrition Profile</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.shoppingList.nutritionProfile}
+        </h2>
         <p className="text-muted-foreground">
           Average nutritional values per 100g across all listed items
         </p>

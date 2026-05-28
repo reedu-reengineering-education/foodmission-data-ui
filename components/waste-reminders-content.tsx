@@ -27,6 +27,7 @@ import {
   AreaChart,
   ComposedChart,
 } from "recharts";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 // Research Questions:
 // 1. Does waste tracking module usage influence shopping decisions?
@@ -98,7 +99,9 @@ export function WasteTrackingContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Waste Tracking Analysis</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {PAGE_TITLES.wasteTrackingAnalysis}
+          </h2>
           <p className="text-muted-foreground">
             Impact of waste tracking module usage on behavior and estimation effectiveness
           </p>

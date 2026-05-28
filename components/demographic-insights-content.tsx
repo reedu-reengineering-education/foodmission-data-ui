@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFiltersWithCrossDim } from "@/hooks/use-analytics-filters";
 import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function DemographicInsightsContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dim1, setDim1, dim2, setDim2 } = useAnalyticsFiltersWithCrossDim();
@@ -163,7 +164,7 @@ export function DemographicInsightsContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Demographic Insights
+          {PAGE_TITLES.mealLog.demographicInsights}
         </h2>
         <p className="text-muted-foreground">
           Cross-dimensional analysis — combine two demographic dimensions

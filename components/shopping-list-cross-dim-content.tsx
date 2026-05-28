@@ -13,7 +13,7 @@ import {
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
-import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function ShoppingListCrossDimContent() {
   const {
@@ -30,7 +30,6 @@ export function ShoppingListCrossDimContent() {
   const [loading, setLoading] = useState(true);
   const [crossPatterns, setCrossPatterns] = useState<SlCrossDimPatterns[]>([]);
   const [crossClassification, setCrossClassification] = useState<SlCrossDimClassification[]>([]);
-  const { capabilities } = useSourceCapabilities("shopping-list");
 
   const filters = useMemo(
     () => ({
@@ -127,7 +126,7 @@ export function ShoppingListCrossDimContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Cross-dimensional Analysis
+          {PAGE_TITLES.shoppingList.crossDimensionalAnalysis}
         </h2>
         <p className="text-muted-foreground">
           Shopping list patterns and nutrition across two demographic dimensions
@@ -166,9 +165,6 @@ export function ShoppingListCrossDimContent() {
                 yAxisWidth={160}
                 footer="Groups with <20 users suppressed for privacy"
               />
-            )}
-            {!capabilities.supportsCrossDimNutrition && (
-              <NoDataCard message="Cross-dimensional nutrition is not available for Shopping List. Use Meal Log for consumed nutrition analytics." />
             )}
           </div>
 

@@ -22,6 +22,7 @@ import {
   buildShoppingSustainabilityTrend,
   normalizeGradeTotals,
 } from "@/lib/metrics-transforms";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function ShoppingListSustainabilityContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd } =
@@ -109,7 +110,9 @@ export function ShoppingListSustainabilityContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Sustainability</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.shoppingList.sustainability}
+        </h2>
         <p className="text-muted-foreground">
           Nutri-Score and Eco-Score grade distributions for listed items
         </p>

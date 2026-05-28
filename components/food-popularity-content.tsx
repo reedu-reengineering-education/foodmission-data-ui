@@ -20,6 +20,7 @@ import { type FoodPopularity } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function FoodPopularityContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
@@ -118,7 +119,9 @@ export function FoodPopularityContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Food Popularity</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.mealLog.foodPopularity}
+        </h2>
         <p className="text-muted-foreground">
           Most consumed foods and food group distribution
         </p>

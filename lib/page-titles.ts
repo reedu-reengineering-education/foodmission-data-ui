@@ -1,0 +1,23 @@
+export const PAGE_TITLES = {
+  dashboardOverview: "Dashboard Overview",
+  dietaryBaselineAnalysis: "Dietary Baseline Analysis",
+  behaviorChangeAnalysis: "Behavior Change Analysis",
+  socialInfluenceAnalysis: "Social Influence Analysis",
+  wasteTrackingAnalysis: "Waste Tracking Analysis",
+  mealLog: {
+    nutritionAnalytics: "Nutrition Analytics",
+    foodPopularity: "Food Popularity",
+    mealPatterns: "Meal Patterns",
+    sustainability: "Sustainability",
+    mealClassification: "Meal Classification",
+    demographicInsights: "Demographic Insights",
+  },
+  shoppingList: {
+    itemPopularity: "Item Popularity",
+    listPatterns: "List Patterns",
+    nutritionProfile: "Nutrition Profile",
+    sustainability: "Sustainability",
+    demographicInsights: "Demographic Insights",
+    crossDimensionalAnalysis: "Cross-dimensional Analysis",
+  },
+} as const;

@@ -16,6 +16,7 @@ import {
   normalizeGradeTotals,
   SCORE_GRADES,
 } from "@/lib/metrics-transforms";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function SustainabilityContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
@@ -89,7 +90,7 @@ export function SustainabilityContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Sustainability Dashboard
+          {PAGE_TITLES.mealLog.sustainability}
         </h2>
         <p className="text-muted-foreground">
           Nutri-Score &amp; Eco-Score distributions and trends

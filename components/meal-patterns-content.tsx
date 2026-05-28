@@ -32,6 +32,7 @@ import { type MealPatterns } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function MealPatternsContent() {
   const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
@@ -162,7 +163,9 @@ export function MealPatternsContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Meal Patterns</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {PAGE_TITLES.mealLog.mealPatterns}
+        </h2>
         <p className="text-muted-foreground">
           Pantry usage, eating out rates, meal volume &amp; complexity
         </p>
