@@ -26,29 +26,39 @@ import {
   CartesianGrid,
 } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import {
-  analyticsApi,
-  type MealClassification,
-  type DemographicClassification,
-  DIMENSION_LABELS,
-} from "@/lib/analytics-api";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type MealClassification, type DemographicClassification } from "@/lib/types";
+import { DIMENSION_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFiltersWithDimension } from "@/hooks/use-analytics-filters";
+import {
+  buildNovaSeries,
+  buildWeightedClassificationByGroup,
+} from "@/lib/metrics-transforms";
+import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function MealClassificationContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
-  const [dimension, setDimension] = useState("ageGroup");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension, setDimension } = useAnalyticsFiltersWithDimension();
+  const { capabilities } = useSourceCapabilities("meal-log");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MealClassification[]>([]);
   const [demoData, setDemoData] = useState<DemographicClassification[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    if (!capabilities.supportsClassification) {
+      setData([]);
+      setDemoData([]);
+      setLoading(false);
+      return;
+    }
     try {
       const filters = {
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
       };
       const [classification, demographic] = await Promise.all([
@@ -65,7 +75,7 @@ export function MealClassificationContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal, dimension]);
+  }, [periodStart, periodEnd, typeOfMeal, dimension, capabilities.supportsClassification]);
 
   useEffect(() => {
     fetchData();
@@ -74,62 +84,25 @@ export function MealClassificationContent() {
   // --- derived ---
 
   // Trend over time
-  const trendMap: Record<
-    string,
-    {
-      vegPct: number;
-      veganPct: number;
-      ultraPct: number;
-      meals: number;
-      ultraCount: number;
-    }
-  > = {};
-  for (const row of data) {
-    const d = row.date.slice(0, 10);
-    if (!trendMap[d])
-      trendMap[d] = {
-        vegPct: 0,
-        veganPct: 0,
-        ultraPct: 0,
-        meals: 0,
-        ultraCount: 0,
-      };
-    const b = trendMap[d];
-    b.vegPct += row.vegetarianPct * row.totalMeals;
-    b.veganPct += row.veganPct * row.totalMeals;
-    if (row.avgUltraProcessedPct != null) {
-      b.ultraPct += row.avgUltraProcessedPct * row.totalMeals;
-      b.ultraCount += row.totalMeals;
-    }
-    b.meals += row.totalMeals;
-  }
-  const trendData = Object.entries(trendMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, v]) => ({
-      date,
-      vegetarianPct: Math.round((v.vegPct / (v.meals || 1)) * 10) / 10,
-      veganPct: Math.round((v.veganPct / (v.meals || 1)) * 10) / 10,
-      ultraProcessedPct:
-        v.ultraCount > 0
-          ? Math.round((v.ultraPct / v.ultraCount) * 10) / 10
-          : null,
+  const trendData = buildWeightedClassificationByGroup(
+    data,
+    (row) => row.date.slice(0, 10),
+  )
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map((row) => ({
+      date: row.key,
+      vegetarianPct: row.vegetarianPct,
+      veganPct: row.veganPct,
+      ultraProcessedPct: row.ultraProcessedPct,
     }));
 
   // NOVA distribution aggregate
-  const novaAgg: Record<string, number> = {};
-  for (const row of data) {
-    if (row.novaDistribution) {
-      for (const [group, count] of Object.entries(row.novaDistribution)) {
-        novaAgg[group] = (novaAgg[group] ?? 0) + (count as number);
-      }
-    }
-  }
-  const novaData = ["1", "2", "3", "4"]
-    .filter((g) => novaAgg[g] != null)
-    .map((g) => ({
-      group: `NOVA ${g}`,
-      count: novaAgg[g] ?? 0,
-    }));
+  const novaData = buildNovaSeries(data, (row) => row.novaDistribution).map(
+    (row) => ({
+      group: row.group.replace("Group", "NOVA"),
+      count: row.count,
+    }),
+  );
 
   const novaLabels: Record<string, string> = {
     "NOVA 1": "Unprocessed",
@@ -139,79 +112,25 @@ export function MealClassificationContent() {
   };
 
   // By meal type
-  const byMealType: Record<
-    string,
-    {
-      veg: number;
-      vegan: number;
-      ultra: number;
-      meals: number;
-      ultraCount: number;
-    }
-  > = {};
-  for (const row of data) {
-    if (!byMealType[row.typeOfMeal])
-      byMealType[row.typeOfMeal] = {
-        veg: 0,
-        vegan: 0,
-        ultra: 0,
-        meals: 0,
-        ultraCount: 0,
-      };
-    const b = byMealType[row.typeOfMeal];
-    b.veg += row.vegetarianPct * row.totalMeals;
-    b.vegan += row.veganPct * row.totalMeals;
-    if (row.avgUltraProcessedPct != null) {
-      b.ultra += row.avgUltraProcessedPct * row.totalMeals;
-      b.ultraCount += row.totalMeals;
-    }
-    b.meals += row.totalMeals;
-  }
-  const mealTypeData = Object.entries(byMealType).map(([meal, v]) => ({
-    meal: meal.charAt(0) + meal.slice(1).toLowerCase().replace("_", " "),
-    vegetarianPct: Math.round((v.veg / (v.meals || 1)) * 10) / 10,
-    veganPct: Math.round((v.vegan / (v.meals || 1)) * 10) / 10,
-    ultraProcessedPct:
-      v.ultraCount > 0 ? Math.round((v.ultra / v.ultraCount) * 10) / 10 : 0,
+  const mealTypeData = buildWeightedClassificationByGroup(
+    data,
+    (row) => row.typeOfMeal,
+  ).map((row) => ({
+    meal: row.key.charAt(0) + row.key.slice(1).toLowerCase().replace("_", " "),
+    vegetarianPct: row.vegetarianPct,
+    veganPct: row.veganPct,
+    ultraProcessedPct: row.ultraProcessedPct ?? 0,
   }));
 
   // Demographic breakdown
-  const dimKey = dimension as keyof DemographicClassification;
-  const demoGrouped: Record<
-    string,
-    {
-      veg: number;
-      vegan: number;
-      ultra: number;
-      meals: number;
-      ultraCount: number;
-    }
-  > = {};
-  for (const row of demoData) {
-    const val = (row[dimKey] as string) ?? "Unknown";
-    if (!demoGrouped[val])
-      demoGrouped[val] = {
-        veg: 0,
-        vegan: 0,
-        ultra: 0,
-        meals: 0,
-        ultraCount: 0,
-      };
-    const b = demoGrouped[val];
-    b.veg += row.vegetarianPct * row.totalMeals;
-    b.vegan += row.veganPct * row.totalMeals;
-    if (row.avgUltraProcessedPct != null) {
-      b.ultra += row.avgUltraProcessedPct * row.totalMeals;
-      b.ultraCount += row.totalMeals;
-    }
-    b.meals += row.totalMeals;
-  }
-  const demoChartData = Object.entries(demoGrouped).map(([label, v]) => ({
-    label: label === "__null__" ? "Not specified" : label,
-    vegetarianPct: Math.round((v.veg / (v.meals || 1)) * 10) / 10,
-    veganPct: Math.round((v.vegan / (v.meals || 1)) * 10) / 10,
-    ultraProcessedPct:
-      v.ultraCount > 0 ? Math.round((v.ultra / v.ultraCount) * 10) / 10 : 0,
+  const demoChartData = buildWeightedClassificationByGroup(
+    demoData,
+    (row) => (row.dimensionValue ?? "Unknown"),
+  ).map((row) => ({
+    label: row.key === "__null__" ? "Not specified" : row.key,
+    vegetarianPct: row.vegetarianPct,
+    veganPct: row.veganPct,
+    ultraProcessedPct: row.ultraProcessedPct ?? 0,
   }));
 
   if (loading) {
@@ -228,7 +147,7 @@ export function MealClassificationContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Meal Classification
+          {PAGE_TITLES.mealLog.mealClassification}
         </h2>
         <p className="text-muted-foreground">
           Vegetarian/vegan rates, ultra-processed % &amp; NOVA food processing
@@ -237,11 +156,11 @@ export function MealClassificationContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
         showDimension
@@ -249,14 +168,10 @@ export function MealClassificationContent() {
         onDimensionChange={setDimension}
       />
 
-      {data.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published classification data available.
-            </p>
-          </CardContent>
-        </Card>
+      {!capabilities.supportsClassification ? (
+        <NoDataCard message="Classification analytics is not available for this source." />
+      ) : data.length === 0 ? (
+        <NoDataCard message="No published classification data available." />
       ) : (
         <>
           {/* Vegetarian / Vegan / Ultra-Processed Trend */}
@@ -354,10 +269,10 @@ export function MealClassificationContent() {
                         color: "var(--chart-4)",
                       },
                     }}
-                    className="h-[300px]"
-                  >
-                    <BarChart data={novaData}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                  className="h-[300px] w-full aspect-auto"
+                >
+                  <BarChart data={novaData}>
+                    <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="group" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
                       <ChartTooltip
@@ -386,113 +301,45 @@ export function MealClassificationContent() {
             )}
 
             {/* By Meal Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Classification by Meal Type</CardTitle>
-                <CardDescription>
-                  Vegetarian/vegan % by meal type
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    vegetarianPct: {
-                      label: "Vegetarian %",
-                      color: "var(--chart-1)",
-                    },
-                    veganPct: {
-                      label: "Vegan %",
-                      color: "var(--chart-2)",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <BarChart data={mealTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="meal" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="vegetarianPct"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="veganPct"
-                      fill="var(--chart-2)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <BarChartCard
+              title="Classification by Meal Type"
+              description="Vegetarian/vegan % by meal type"
+              config={{
+                vegetarianPct: { label: "Vegetarian %", color: "var(--chart-1)" },
+                veganPct: { label: "Vegan %", color: "var(--chart-2)" },
+              }}
+              data={mealTypeData as unknown as Record<string, unknown>[]}
+              bars={[
+                { dataKey: "vegetarianPct", fill: "var(--chart-1)" },
+                { dataKey: "veganPct", fill: "var(--chart-2)" },
+              ]}
+              xAxisKey="meal"
+              showLegend
+              height="h-[300px]"
+            />
           </div>
 
           {/* Demographic Breakdown */}
           {demoChartData.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Classification by {DIMENSION_LABELS[dimension] ?? dimension}
-                </CardTitle>
-                <CardDescription>
-                  Vegetarian/vegan rates by demographic group (k≥5 anonymity)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    vegetarianPct: {
-                      label: "Vegetarian %",
-                      color: "var(--chart-1)",
-                    },
-                    veganPct: {
-                      label: "Vegan %",
-                      color: "var(--chart-2)",
-                    },
-                    ultraProcessedPct: {
-                      label: "Ultra-Processed %",
-                      color: "var(--chart-3)",
-                    },
-                  }}
-                  className="h-[350px]"
-                >
-                  <BarChart data={demoChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
-                      label={{
-                        value: "%",
-                        angle: -90,
-                        position: "insideLeft",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar
-                      dataKey="vegetarianPct"
-                      fill="var(--chart-1)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="veganPct"
-                      fill="var(--chart-2)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="ultraProcessedPct"
-                      fill="var(--chart-3)"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground">
-                Groups with fewer than 5 users are suppressed for privacy
-              </CardFooter>
-            </Card>
+            <BarChartCard
+              title={`Classification by ${DIMENSION_LABELS[dimension] ?? dimension}`}
+              description="Vegetarian/vegan rates by demographic group (k≥5 anonymity)"
+              config={{
+                vegetarianPct: { label: "Vegetarian %", color: "var(--chart-1)" },
+                veganPct: { label: "Vegan %", color: "var(--chart-2)" },
+                ultraProcessedPct: { label: "Ultra-Processed %", color: "var(--chart-3)" },
+              }}
+              data={demoChartData as unknown as Record<string, unknown>[]}
+              bars={[
+                { dataKey: "vegetarianPct", fill: "var(--chart-1)" },
+                { dataKey: "veganPct", fill: "var(--chart-2)" },
+                { dataKey: "ultraProcessedPct", fill: "var(--chart-3)" },
+              ]}
+              xAxisKey="label"
+              yAxisLabel="%"
+              showLegend
+              footer="Groups with fewer than 5 users are suppressed for privacy"
+            />
           )}
         </>
       )}

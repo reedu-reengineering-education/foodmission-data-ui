@@ -28,10 +28,8 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  Cell,
-  Pie,
-  PieChart,
 } from "recharts";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 // Research Question: Baseline dietary differences in different countries
 
@@ -90,7 +88,9 @@ export function DietaryBaselineContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dietary Baseline Analysis</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {PAGE_TITLES.dietaryBaselineAnalysis}
+          </h2>
           <p className="text-muted-foreground">
             Baseline dietary differences across countries
           </p>
