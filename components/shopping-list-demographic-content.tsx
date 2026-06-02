@@ -13,7 +13,6 @@ import {
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/constants";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
-import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 import { PAGE_TITLES } from "@/lib/page-titles";
 
 const NOVA_GROUPS = ["1", "2", "3", "4"];
@@ -31,7 +30,6 @@ export function ShoppingListDemographicContent() {
   const [loading, setLoading] = useState(true);
   const [demoPatterns, setDemoPatterns] = useState<SlDemographicPatterns[]>([]);
   const [demoClassification, setDemoClassification] = useState<SlDemographicClassification[]>([]);
-  const { capabilities } = useSourceCapabilities("shopping-list");
 
   const filters = useMemo(
     () => ({
@@ -174,9 +172,6 @@ export function ShoppingListDemographicContent() {
                 yAxisWidth={120}
                 height="h-[300px]"
               />
-            )}
-            {!capabilities.supportsDemographicNutrition && (
-              <NoDataCard message="Nutrition by demographics is not available for Shopping List. Use Meal Log for consumed nutrition analytics." />
             )}
           </div>
 

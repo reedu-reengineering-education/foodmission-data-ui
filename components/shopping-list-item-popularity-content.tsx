@@ -25,6 +25,7 @@ import {
   type SlCategoryPopularity,
   type SlFoodGroups,
   type SlListPatterns,
+  type SlSummary,
 } from "@/lib/types";
 import { useShoppingListFilters } from "@/hooks/use-analytics-filters";
 import { PAGE_TITLES } from "@/lib/page-titles";
@@ -38,6 +39,7 @@ export function ShoppingListItemPopularityContent() {
   const [categories, setCategories] = useState<SlCategoryPopularity[]>([]);
   const [foodGroups, setFoodGroups] = useState<SlFoodGroups[]>([]);
   const [patterns, setPatterns] = useState<SlListPatterns[]>([]);
+  const [summary, setSummary] = useState<SlSummary | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -50,16 +52,18 @@ export function ShoppingListItemPopularityContent() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [i, c, fg, p] = await Promise.all([
+      const [i, c, fg, p, s] = await Promise.all([
         shoppingListApi.itemPopularity(filters),
         shoppingListApi.categoryPopularity(filters),
         shoppingListApi.foodGroups(filters),
         shoppingListApi.listPatterns(filters),
+        shoppingListApi.summary(filters),
       ]);
       setItems(i);
       setCategories(c);
       setFoodGroups(fg);
       setPatterns(p);
+      setSummary(s);
     } catch (e) {
       console.error("Failed to fetch shopping list item popularity", e);
     } finally {
@@ -71,8 +75,8 @@ export function ShoppingListItemPopularityContent() {
     fetchData();
   }, [fetchData]);
 
-  // Aggregate items by foodName
-  const topItems = Object.values(
+  // Aggregate items by foodName (all rows in the response)
+  const allItems = Object.values(
     items.reduce<
       Record<
         string,
@@ -110,9 +114,8 @@ export function ShoppingListItemPopularityContent() {
       }
       return acc;
     }, {})
-  )
-    .sort((a, b) => b.frequency - a.frequency)
-    .slice(0, 20);
+  ).sort((a, b) => b.frequency - a.frequency);
+  const topItems = allItems.slice(0, 20);
 
   // Avg quantity per top item
   const quantityData = topItems
@@ -179,7 +182,16 @@ export function ShoppingListItemPopularityContent() {
         }));
 
   const totalLists = patterns.reduce((s, r) => s + r.totalLists, 0);
-  const uniqueItemCount = topItems.length;
+  const uniqueItemCount =
+    summary?.kpis?.uniqueItemsTracked ??
+    summary?.uniqueItemsTracked ??
+    allItems.length;
+  const totalCategoryCount =
+    summary?.kpis?.categoryCount ?? summary?.categoryCount ?? topCategories.length;
+  const totalFoodGroupCount =
+    summary?.kpis?.foodGroupCount ??
+    summary?.foodGroupCount ??
+    topFoodGroups.length;
 
   if (loading) {
     return (
@@ -233,7 +245,9 @@ export function ShoppingListItemPopularityContent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{uniqueItemCount}</div>
-            <p className="text-xs text-muted-foreground">Distinct items in top 20</p>
+            <p className="text-xs text-muted-foreground">
+              Distinct items across all results
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -241,8 +255,10 @@ export function ShoppingListItemPopularityContent() {
             <CardDescription>Categories</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{topCategories.length}</div>
-            <p className="text-xs text-muted-foreground">Distinct item categories</p>
+            <div className="text-2xl font-bold">{totalCategoryCount}</div>
+            <p className="text-xs text-muted-foreground">
+              Distinct categories across all items
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -250,8 +266,10 @@ export function ShoppingListItemPopularityContent() {
             <CardDescription>Food Groups</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{topFoodGroups.length}</div>
-            <p className="text-xs text-muted-foreground">Distinct food groups</p>
+            <div className="text-2xl font-bold">{totalFoodGroupCount}</div>
+            <p className="text-xs text-muted-foreground">
+              Distinct food groups across all items
+            </p>
           </CardContent>
         </Card>
       </div>

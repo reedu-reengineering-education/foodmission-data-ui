@@ -373,6 +373,14 @@ export interface SlCrossDimClassification {
 export interface SlSummary {
   period: { from: string | null; to: string | null };
   metadata?: AnalyticsSummaryMetadata;
+  kpis?: {
+    uniqueItemsTracked?: number | null;
+    categoryCount?: number | null;
+    foodGroupCount?: number | null;
+  };
+  uniqueItemsTracked?: number | null;
+  categoryCount?: number | null;
+  foodGroupCount?: number | null;
   topItems: { name: string; frequency: number; uniqueUsers: number }[];
   topCategories: { category: string; frequency: number; uniqueUsers: number }[];
   listPatterns: {
