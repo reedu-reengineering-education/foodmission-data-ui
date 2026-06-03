@@ -27,7 +27,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
+import { getClientSession } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 
@@ -130,8 +130,6 @@ const data = {
       title: "Personal Food Profile",
       url: "/personal-profile",
       icon: Soup,
-      disabled: true,
-      items: [],
     },
   ],
   research: [
@@ -204,8 +202,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   useEffect(() => {
     async function fetchUser() {
-      const session = await authClient.getSession();
-      const user = session?.data?.user;
+      const user = await getClientSession();
       if (user) {
         setUser({
           name: user.name,

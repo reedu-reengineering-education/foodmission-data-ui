@@ -1,62 +1,38 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
-import { Loader2, Key } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Key } from "lucide-react";
 
-export default function SignIn() {
-    const [loading, setLoading] = useState(false);
-
-    return (
-        <Card className="max-w-lg">
-            <CardHeader>
-                <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
-                <CardDescription className="text-xs md:text-sm">
-                    Enter your email below to login to your account
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid gap-4">
-
-                    <div className={cn(
-                        "w-full gap-2 flex items-center",
-                        "justify-between flex-col"
-                    )}>
-                        <Button
-                            variant="outline"
-                            className="w-full gap-2"
-                            disabled={loading}
-                            onClick={async () => {
-                                await authClient.signIn.oauth2(
-                                    {
-                                        providerId: "keycloak",
-                                        callbackURL: "/",
-                                    },
-                                    {
-                                        onRequest: () => {
-                                            setLoading(true);
-                                        },
-                                        onResponse: () => {
-                                            setLoading(false);
-                                        },
-                                    }
-                                );
-                            }}
-                        >
-
-                            Sign in with FOODMISSION
-                        </Button>
-                    </div>
-                </div>
-            </CardContent>
-
-        </Card>
-    );
+export default function SignIn({
+  callbackUrl = "/",
+}: {
+  callbackUrl?: string;
+}) {
+  return (
+    <Card className="max-w-lg">
+      <CardHeader>
+        <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
+        <CardDescription className="text-xs md:text-sm">
+          Sign in with your FOODMISSION account to continue.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <a
+          href={`/api/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+        >
+          <Button variant="outline" className="w-full gap-2">
+            <Key className="size-4" />
+            Sign in with FOODMISSION
+          </Button>
+        </a>
+      </CardContent>
+    </Card>
+  );
 }

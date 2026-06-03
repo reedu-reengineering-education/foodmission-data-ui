@@ -40,8 +40,12 @@ function KpiCards({
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalUsers.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">Unique users in published data</p>
+          <div className="text-2xl font-bold">
+            {totalUsers.toLocaleString()}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Unique users in published data
+          </p>
         </CardContent>
       </Card>
 
@@ -51,7 +55,9 @@ function KpiCards({
           <Utensils className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalMeals.toLocaleString()}</div>
+          <div className="text-2xl font-bold">
+            {totalMeals.toLocaleString()}
+          </div>
           <p className="text-xs text-muted-foreground">
             Across {mealTypeCount} meal types
           </p>
@@ -69,7 +75,9 @@ function KpiCards({
               ? `${(totalCalories / 1_000_000).toFixed(1)}M`
               : totalCalories.toLocaleString()}
           </div>
-          <p className="text-xs text-muted-foreground">kcal total across all meals</p>
+          <p className="text-xs text-muted-foreground">
+            kcal total across all meals
+          </p>
         </CardContent>
       </Card>
 
@@ -82,7 +90,9 @@ function KpiCards({
           <div className="text-2xl font-bold">
             {countriesCount} {countriesCount === 1 ? "Country" : "Countries"}
           </div>
-          <p className="text-xs text-muted-foreground">With published analytics data</p>
+          <p className="text-xs text-muted-foreground">
+            With published analytics data
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -263,15 +273,18 @@ export function DashboardContent() {
         <Card>
           <CardContent className="flex items-center justify-center py-16">
             <p className="text-muted-foreground">
-              No published analytics data available yet. Run an aggregation batch and
-              publish it to see data here.
+              No published analytics data available yet. Run an aggregation
+              batch and publish it to see data here.
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
           <MapSection countryChoro={countryChoro} />
-          <MealTypeSection mealTypeChart={mealTypeChart} totalMeals={totalMeals} />
+          <MealTypeSection
+            mealTypeChart={mealTypeChart}
+            totalMeals={totalMeals}
+          />
           <DemographicsSection
             ageChart={ageChart}
             genderChart={genderChart}
