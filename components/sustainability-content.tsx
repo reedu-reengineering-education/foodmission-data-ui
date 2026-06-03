@@ -25,7 +25,14 @@ import {
 import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function SustainabilityContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
+  const {
+    periodStart,
+    setPeriodStart,
+    periodEnd,
+    setPeriodEnd,
+    typeOfMeal,
+    setTypeOfMeal,
+  } = useAnalyticsFilters();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Sustainability[]>([]);
 
@@ -85,17 +92,33 @@ export function SustainabilityContent() {
   // KPI metrics
   const kpiDataPoints = data.length;
   const totalNutriCount = nutriScoreData.reduce((s, d) => s + d.count, 0);
-  const kpiGradeANutriPct = totalNutriCount > 0
-    ? Math.round((nutriScoreData.find(d => d.grade === "A")?.count ?? 0) / totalNutriCount * 100)
-    : null;
+  const kpiGradeANutriPct =
+    totalNutriCount > 0
+      ? Math.round(
+          ((nutriScoreData.find((d) => d.grade === "A")?.count ?? 0) /
+            totalNutriCount) *
+            100,
+        )
+      : null;
   const totalEcoCount = ecoScoreData.reduce((s, d) => s + d.count, 0);
-  const kpiGradeAEcoPct = totalEcoCount > 0
-    ? Math.round((ecoScoreData.find(d => d.grade === "A")?.count ?? 0) / totalEcoCount * 100)
-    : null;
+  const kpiGradeAEcoPct =
+    totalEcoCount > 0
+      ? Math.round(
+          ((ecoScoreData.find((d) => d.grade === "A")?.count ?? 0) /
+            totalEcoCount) *
+            100,
+        )
+      : null;
   const kpiAvgCarbon = (() => {
-    const rows = data.filter(d => d.avgCarbonFootprint != null);
+    const rows = data.filter((d) => d.avgCarbonFootprint != null);
     if (!rows.length) return null;
-    return Math.round(rows.reduce((s, d) => s + (d.avgCarbonFootprint ?? 0), 0) / rows.length * 100) / 100;
+    return (
+      Math.round(
+        (rows.reduce((s, d) => s + (d.avgCarbonFootprint ?? 0), 0) /
+          rows.length) *
+          100,
+      ) / 100
+    );
   })();
 
   if (loading) {
@@ -146,7 +169,9 @@ export function SustainabilityContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{kpiDataPoints}</div>
-                <p className="text-xs text-muted-foreground">Dates with sustainability data</p>
+                <p className="text-xs text-muted-foreground">
+                  Dates with sustainability data
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -154,8 +179,12 @@ export function SustainabilityContent() {
                 <CardDescription>Nutri-Score Grade A</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiGradeANutriPct != null ? `${kpiGradeANutriPct}%` : "—"}</div>
-                <p className="text-xs text-muted-foreground">Best nutritional quality grade</p>
+                <div className="text-2xl font-bold">
+                  {kpiGradeANutriPct != null ? `${kpiGradeANutriPct}%` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Best nutritional quality grade
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -163,8 +192,12 @@ export function SustainabilityContent() {
                 <CardDescription>Eco-Score Grade A</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiGradeAEcoPct != null ? `${kpiGradeAEcoPct}%` : "—"}</div>
-                <p className="text-xs text-muted-foreground">Lowest environmental impact grade</p>
+                <div className="text-2xl font-bold">
+                  {kpiGradeAEcoPct != null ? `${kpiGradeAEcoPct}%` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Lowest environmental impact grade
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -172,8 +205,12 @@ export function SustainabilityContent() {
                 <CardDescription>Avg Carbon Footprint</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiAvgCarbon != null ? `${kpiAvgCarbon} kg` : "—"}</div>
-                <p className="text-xs text-muted-foreground">Average CO₂ per meal entry</p>
+                <div className="text-2xl font-bold">
+                  {kpiAvgCarbon != null ? `${kpiAvgCarbon} kg` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Average CO₂ per meal entry
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -214,7 +251,12 @@ export function SustainabilityContent() {
               <AreaChartCard
                 title="Nutri-Score Trend"
                 description="How the A–E grade distribution shifts over time"
-                config={Object.fromEntries(SCORE_GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
+                config={Object.fromEntries(
+                  SCORE_GRADES.map((g) => [
+                    g,
+                    { label: `Grade ${g}`, color: gradeColors[g] },
+                  ]),
+                )}
                 data={nutriTrendData as unknown as Record<string, unknown>[]}
                 areas={SCORE_GRADES.map((g) => ({
                   dataKey: g,
@@ -232,7 +274,12 @@ export function SustainabilityContent() {
               <AreaChartCard
                 title="Eco-Score Trend"
                 description="How the A–E grade distribution shifts over time"
-                config={Object.fromEntries(SCORE_GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
+                config={Object.fromEntries(
+                  SCORE_GRADES.map((g) => [
+                    g,
+                    { label: `Grade ${g}`, color: gradeColors[g] },
+                  ]),
+                )}
                 data={ecoTrendData as unknown as Record<string, unknown>[]}
                 areas={SCORE_GRADES.map((g) => ({
                   dataKey: g,

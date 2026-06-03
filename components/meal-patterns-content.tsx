@@ -35,7 +35,14 @@ import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
 import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function MealPatternsContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
+  const {
+    periodStart,
+    setPeriodStart,
+    periodEnd,
+    setPeriodEnd,
+    typeOfMeal,
+    setTypeOfMeal,
+  } = useAnalyticsFilters();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MealPatterns[]>([]);
 
@@ -95,8 +102,7 @@ export function MealPatternsContent() {
       date,
       pantryPct: Math.round((v.pantryPct / (v.meals || 1)) * 10) / 10,
       eatenOutPct: Math.round((v.eatenOutPct / (v.meals || 1)) * 10) / 10,
-      avgItemsPerMeal:
-        Math.round((v.avgItems / (v.meals || 1)) * 10) / 10,
+      avgItemsPerMeal: Math.round((v.avgItems / (v.meals || 1)) * 10) / 10,
       totalMeals: v.meals,
     }));
 
@@ -107,7 +113,12 @@ export function MealPatternsContent() {
   > = {};
   for (const row of data) {
     if (!byMealType[row.typeOfMeal])
-      byMealType[row.typeOfMeal] = { pantry: 0, eatenOut: 0, items: 0, meals: 0 };
+      byMealType[row.typeOfMeal] = {
+        pantry: 0,
+        eatenOut: 0,
+        items: 0,
+        meals: 0,
+      };
     const b = byMealType[row.typeOfMeal];
     b.pantry += row.mealsFromPantryPct * row.totalMeals;
     b.eatenOut += row.mealsEatenOutPct * row.totalMeals;
@@ -152,15 +163,30 @@ export function MealPatternsContent() {
 
   // KPI metrics
   const kpiTotalMeals = data.reduce((s, d) => s + d.totalMeals, 0);
-  const kpiAvgItems = kpiTotalMeals > 0
-    ? Math.round(data.reduce((s, d) => s + d.avgItemsPerMeal * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
-    : null;
-  const kpiAvgPantryPct = kpiTotalMeals > 0
-    ? Math.round(data.reduce((s, d) => s + d.mealsFromPantryPct * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
-    : null;
-  const kpiAvgEatenOutPct = kpiTotalMeals > 0
-    ? Math.round(data.reduce((s, d) => s + d.mealsEatenOutPct * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
-    : null;
+  const kpiAvgItems =
+    kpiTotalMeals > 0
+      ? Math.round(
+          (data.reduce((s, d) => s + d.avgItemsPerMeal * d.totalMeals, 0) /
+            kpiTotalMeals) *
+            10,
+        ) / 10
+      : null;
+  const kpiAvgPantryPct =
+    kpiTotalMeals > 0
+      ? Math.round(
+          (data.reduce((s, d) => s + d.mealsFromPantryPct * d.totalMeals, 0) /
+            kpiTotalMeals) *
+            10,
+        ) / 10
+      : null;
+  const kpiAvgEatenOutPct =
+    kpiTotalMeals > 0
+      ? Math.round(
+          (data.reduce((s, d) => s + d.mealsEatenOutPct * d.totalMeals, 0) /
+            kpiTotalMeals) *
+            10,
+        ) / 10
+      : null;
 
   if (loading) {
     return (
@@ -209,8 +235,12 @@ export function MealPatternsContent() {
                 <CardDescription>Total Meals Logged</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiTotalMeals.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Across all types &amp; dates</p>
+                <div className="text-2xl font-bold">
+                  {kpiTotalMeals.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Across all types &amp; dates
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -219,7 +249,9 @@ export function MealPatternsContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{kpiAvgItems ?? "—"}</div>
-                <p className="text-xs text-muted-foreground">Average items per logged meal</p>
+                <p className="text-xs text-muted-foreground">
+                  Average items per logged meal
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -227,8 +259,12 @@ export function MealPatternsContent() {
                 <CardDescription>Avg Pantry Usage</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiAvgPantryPct != null ? `${kpiAvgPantryPct}%` : "—"}</div>
-                <p className="text-xs text-muted-foreground">Meals sourced from pantry</p>
+                <div className="text-2xl font-bold">
+                  {kpiAvgPantryPct != null ? `${kpiAvgPantryPct}%` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Meals sourced from pantry
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -236,8 +272,12 @@ export function MealPatternsContent() {
                 <CardDescription>Avg Eating Out</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiAvgEatenOutPct != null ? `${kpiAvgEatenOutPct}%` : "—"}</div>
-                <p className="text-xs text-muted-foreground">Meals eaten outside home</p>
+                <div className="text-2xl font-bold">
+                  {kpiAvgEatenOutPct != null ? `${kpiAvgEatenOutPct}%` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Meals eaten outside home
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -301,7 +341,8 @@ export function MealPatternsContent() {
               </ChartContainer>
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground">
-              {trendData.length} days · {data.reduce((s, d) => s + d.totalMeals, 0)} total meals
+              {trendData.length} days ·{" "}
+              {data.reduce((s, d) => s + d.totalMeals, 0)} total meals
             </CardFooter>
           </Card>
 
@@ -310,9 +351,21 @@ export function MealPatternsContent() {
             <AreaChartCard
               title="Average Items per Meal"
               description="Number of food items per meal over time"
-              config={{ avgItemsPerMeal: { label: "Items/Meal", color: "var(--chart-4)" } }}
+              config={{
+                avgItemsPerMeal: {
+                  label: "Items/Meal",
+                  color: "var(--chart-4)",
+                },
+              }}
               data={trendData as unknown as Record<string, unknown>[]}
-              areas={[{ dataKey: "avgItemsPerMeal", stroke: "var(--chart-4)", fill: "var(--chart-4)", fillOpacity: 0.3 }]}
+              areas={[
+                {
+                  dataKey: "avgItemsPerMeal",
+                  stroke: "var(--chart-4)",
+                  fill: "var(--chart-4)",
+                  fillOpacity: 0.3,
+                },
+              ]}
             />
 
             {/* By Meal Type */}
@@ -337,9 +390,18 @@ export function MealPatternsContent() {
           <AreaChartCard
             title="Total Meals Over Time"
             description="Daily meal logging volume — spot weekday/weekend patterns and growth"
-            config={{ totalMeals: { label: "Total Meals", color: "var(--chart-5)" } }}
+            config={{
+              totalMeals: { label: "Total Meals", color: "var(--chart-5)" },
+            }}
             data={totalMealsTrend as unknown as Record<string, unknown>[]}
-            areas={[{ dataKey: "totalMeals", stroke: "var(--chart-5)", fill: "var(--chart-5)", fillOpacity: 0.3 }]}
+            areas={[
+              {
+                dataKey: "totalMeals",
+                stroke: "var(--chart-5)",
+                fill: "var(--chart-5)",
+                fillOpacity: 0.3,
+              },
+            ]}
             height="h-[300px]"
           />
 
@@ -350,7 +412,10 @@ export function MealPatternsContent() {
                 title="Meal Volume by Type"
                 description="How total meals break down across meal types over time"
                 config={Object.fromEntries(
-                  mealTypeKeys.map((mt, i) => [mt, { label: mt, color: `var(--chart-${(i % 5) + 1})` }])
+                  mealTypeKeys.map((mt, i) => [
+                    mt,
+                    { label: mt, color: `var(--chart-${(i % 5) + 1})` },
+                  ]),
                 )}
                 data={mealVolumeByType as unknown as Record<string, unknown>[]}
                 areas={mealTypeKeys.map((mt, i) => ({
@@ -368,7 +433,12 @@ export function MealPatternsContent() {
             <BarChartCard
               title="Meal Complexity by Type"
               description="Average number of food items per meal — are dinners more complex than snacks?"
-              config={{ avgItemsPerMeal: { label: "Avg Items/Meal", color: "var(--chart-2)" } }}
+              config={{
+                avgItemsPerMeal: {
+                  label: "Avg Items/Meal",
+                  color: "var(--chart-2)",
+                },
+              }}
               data={complexityData as unknown as Record<string, unknown>[]}
               bars={[{ dataKey: "avgItemsPerMeal", fill: "var(--chart-2)" }]}
               xAxisKey="meal"

@@ -35,14 +35,16 @@ export function ShoppingListDemographicContent() {
 
   const [loading, setLoading] = useState(true);
   const [demoPatterns, setDemoPatterns] = useState<SlDemographicPatterns[]>([]);
-  const [demoClassification, setDemoClassification] = useState<SlDemographicClassification[]>([]);
+  const [demoClassification, setDemoClassification] = useState<
+    SlDemographicClassification[]
+  >([]);
 
   const filters = useMemo(
     () => ({
       periodStart: periodStart || undefined,
       periodEnd: periodEnd || undefined,
     }),
-    [periodStart, periodEnd]
+    [periodStart, periodEnd],
   );
 
   const fetchData = useCallback(async () => {
@@ -77,37 +79,54 @@ export function ShoppingListDemographicContent() {
   // Use dimensionValue directly from new API shape
   const demoPatternsByDim = Object.values(
     demoPatterns.reduce<
-      Record<string, { label: string; avgItemsPerList: number; totalLists: number; count: number }>
+      Record<
+        string,
+        {
+          label: string;
+          avgItemsPerList: number;
+          totalLists: number;
+          count: number;
+        }
+      >
     >((acc, r) => {
-      const label = r.dimensionValue === "__null__" ? "Not specified" : r.dimensionValue;
-      if (!acc[label]) acc[label] = { label, avgItemsPerList: 0, totalLists: 0, count: 0 };
+      const label =
+        r.dimensionValue === "__null__" ? "Not specified" : r.dimensionValue;
+      if (!acc[label])
+        acc[label] = { label, avgItemsPerList: 0, totalLists: 0, count: 0 };
       acc[label].avgItemsPerList += r.avgItemsPerList;
       acc[label].totalLists += r.totalLists;
       acc[label].count++;
       return acc;
-    }, {})
+    }, {}),
   )
     .map((v) => ({
       label: v.label,
-      avgItemsPerList: Math.round((v.avgItemsPerList / (v.count || 1)) * 10) / 10,
+      avgItemsPerList:
+        Math.round((v.avgItemsPerList / (v.count || 1)) * 10) / 10,
       totalLists: v.totalLists,
     }))
     .sort((a, b) => b.totalLists - a.totalLists);
 
   const demoUltraProcessedByDim = Object.values(
     demoClassification.reduce<
-      Record<string, { label: string; avgUltraProcessedPct: number; count: number }>
+      Record<
+        string,
+        { label: string; avgUltraProcessedPct: number; count: number }
+      >
     >((acc, r) => {
-      const label = r.dimensionValue === "__null__" ? "Not specified" : r.dimensionValue;
-      if (!acc[label]) acc[label] = { label, avgUltraProcessedPct: 0, count: 0 };
+      const label =
+        r.dimensionValue === "__null__" ? "Not specified" : r.dimensionValue;
+      if (!acc[label])
+        acc[label] = { label, avgUltraProcessedPct: 0, count: 0 };
       acc[label].avgUltraProcessedPct += r.avgUltraProcessedPct ?? 0;
       acc[label].count++;
       return acc;
-    }, {})
+    }, {}),
   )
     .map((v) => ({
       label: v.label,
-      avgUltraProcessedPct: Math.round((v.avgUltraProcessedPct / (v.count || 1)) * 10) / 10,
+      avgUltraProcessedPct:
+        Math.round((v.avgUltraProcessedPct / (v.count || 1)) * 10) / 10,
     }))
     .sort((a, b) => b.avgUltraProcessedPct - a.avgUltraProcessedPct);
 
@@ -173,7 +192,9 @@ export function ShoppingListDemographicContent() {
         onDimensionChange={setDimension}
       />
 
-      {demoPatternsByDim.length === 0 && demoUltraProcessedByDim.length === 0 && novaData.length === 0 ? (
+      {demoPatternsByDim.length === 0 &&
+      demoUltraProcessedByDim.length === 0 &&
+      novaData.length === 0 ? (
         <NoDataCard message="No published demographic insights data available." />
       ) : (
         <>
@@ -185,7 +206,9 @@ export function ShoppingListDemographicContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{kpiGroups}</div>
-                <p className="text-xs text-muted-foreground">Distinct values for selected dimension</p>
+                <p className="text-xs text-muted-foreground">
+                  Distinct values for selected dimension
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -193,8 +216,12 @@ export function ShoppingListDemographicContent() {
                 <CardDescription>Total Shopping Lists</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiTotalLists.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Across all demographic groups</p>
+                <div className="text-2xl font-bold">
+                  {kpiTotalLists.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Across all demographic groups
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -202,8 +229,15 @@ export function ShoppingListDemographicContent() {
                 <CardDescription>Most Active Group</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-lg font-bold truncate" title={kpiMostListsGroup}>{kpiMostListsGroup}</div>
-                <p className="text-xs text-muted-foreground">Most shopping lists recorded</p>
+                <div
+                  className="text-lg font-bold truncate"
+                  title={kpiMostListsGroup}
+                >
+                  {kpiMostListsGroup}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Most shopping lists recorded
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -211,8 +245,15 @@ export function ShoppingListDemographicContent() {
                 <CardDescription>Highest Ultra-Processed</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-lg font-bold truncate" title={kpiHighestUltraGroup}>{kpiHighestUltraGroup}</div>
-                <p className="text-xs text-muted-foreground">Group with most ultra-processed items</p>
+                <div
+                  className="text-lg font-bold truncate"
+                  title={kpiHighestUltraGroup}
+                >
+                  {kpiHighestUltraGroup}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Group with most ultra-processed items
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -222,7 +263,12 @@ export function ShoppingListDemographicContent() {
               <HorizontalBarChartCard
                 title={`List Patterns by ${dimLabel}`}
                 description="Avg items per list"
-                config={{ avgItemsPerList: { label: "Avg Items / List", color: "var(--chart-1)" } }}
+                config={{
+                  avgItemsPerList: {
+                    label: "Avg Items / List",
+                    color: "var(--chart-1)",
+                  },
+                }}
                 data={demoPatternsByDim as unknown as Record<string, unknown>[]}
                 bars={[{ dataKey: "avgItemsPerList", fill: "var(--chart-1)" }]}
                 yAxisKey="label"
@@ -236,9 +282,18 @@ export function ShoppingListDemographicContent() {
             <HorizontalBarChartCard
               title={`Ultra-processed Items by ${dimLabel}`}
               description="Average % of NOVA group 4 items per demographic group"
-              config={{ avgUltraProcessedPct: { label: "Ultra-processed %", color: "var(--chart-5)" } }}
-              data={demoUltraProcessedByDim as unknown as Record<string, unknown>[]}
-              bars={[{ dataKey: "avgUltraProcessedPct", fill: "var(--chart-5)" }]}
+              config={{
+                avgUltraProcessedPct: {
+                  label: "Ultra-processed %",
+                  color: "var(--chart-5)",
+                },
+              }}
+              data={
+                demoUltraProcessedByDim as unknown as Record<string, unknown>[]
+              }
+              bars={[
+                { dataKey: "avgUltraProcessedPct", fill: "var(--chart-5)" },
+              ]}
               yAxisKey="label"
               yAxisWidth={120}
               height="h-[300px]"
