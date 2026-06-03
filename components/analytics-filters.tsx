@@ -3,34 +3,37 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/analytics-api";
+import { MEAL_TYPES, DIMENSIONS, DIMENSION_LABELS } from "@/lib/constants";
+import { Dimension } from "@/lib/types";
 
 interface AnalyticsFiltersProps {
   periodStart: string;
   periodEnd: string;
-  typeOfMeal: string;
+  typeOfMeal?: string;
   onPeriodStartChange: (v: string) => void;
   onPeriodEndChange: (v: string) => void;
-  onTypeOfMealChange: (v: string) => void;
+  onTypeOfMealChange?: (v: string) => void;
   onApply: () => void;
+  showTypeOfMeal?: boolean;
   showDimension?: boolean;
-  dimension?: string;
-  onDimensionChange?: (v: string) => void;
+  dimension?: Dimension;
+  onDimensionChange?: (v: Dimension) => void;
   showCrossDim?: boolean;
-  dim1?: string;
-  dim2?: string;
-  onDim1Change?: (v: string) => void;
-  onDim2Change?: (v: string) => void;
+  dim1?: Dimension;
+  dim2?: Dimension;
+  onDim1Change?: (v: Dimension) => void;
+  onDim2Change?: (v: Dimension) => void;
 }
 
 export function AnalyticsFiltersBar({
   periodStart,
   periodEnd,
-  typeOfMeal,
+  typeOfMeal = "",
   onPeriodStartChange,
   onPeriodEndChange,
-  onTypeOfMealChange,
+  onTypeOfMealChange = () => {},
   onApply,
+  showTypeOfMeal = true,
   showDimension = false,
   dimension,
   onDimensionChange,
@@ -60,21 +63,24 @@ export function AnalyticsFiltersBar({
           onChange={(e) => onPeriodEndChange(e.target.value)}
         />
       </div>
-      <div className="space-y-1">
-        <Label className="text-xs">Meal Type</Label>
-        <select
-          className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          value={typeOfMeal}
-          onChange={(e) => onTypeOfMealChange(e.target.value)}
-        >
-          <option value="">All</option>
-          {MEAL_TYPES.map((m) => (
-            <option key={m} value={m}>
-              {m.charAt(0) + m.slice(1).toLowerCase().replace("_", " ")}
-            </option>
-          ))}
-        </select>
-      </div>
+
+      {showTypeOfMeal && (
+        <div className="space-y-1">
+          <Label className="text-xs">Meal Type</Label>
+          <select
+            className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={typeOfMeal}
+            onChange={(e) => onTypeOfMealChange(e.target.value)}
+          >
+            <option value="">All</option>
+            {MEAL_TYPES.map((m) => (
+              <option key={m} value={m}>
+                {m.charAt(0) + m.slice(1).toLowerCase().replace("_", " ")}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {showDimension && onDimensionChange && (
         <div className="space-y-1">
@@ -82,7 +88,7 @@ export function AnalyticsFiltersBar({
           <select
             className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             value={dimension ?? ""}
-            onChange={(e) => onDimensionChange(e.target.value)}
+            onChange={(e) => onDimensionChange(e.target.value as Dimension)}
           >
             <option value="">All</option>
             {DIMENSIONS.map((d) => (
@@ -101,7 +107,7 @@ export function AnalyticsFiltersBar({
             <select
               className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               value={dim1 ?? ""}
-              onChange={(e) => onDim1Change(e.target.value)}
+              onChange={(e) => onDim1Change(e.target.value as Dimension)}
             >
               <option value="">Any</option>
               {DIMENSIONS.map((d) => (
@@ -116,7 +122,7 @@ export function AnalyticsFiltersBar({
             <select
               className="flex h-8 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               value={dim2 ?? ""}
-              onChange={(e) => onDim2Change(e.target.value)}
+              onChange={(e) => onDim2Change(e.target.value as Dimension)}
             >
               <option value="">Any</option>
               {DIMENSIONS.map((d) => (

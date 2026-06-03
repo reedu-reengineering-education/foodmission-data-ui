@@ -30,6 +30,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 // Research Question: Does greater social connectedness influence behavior change?
 // Note: All users have access to social features; analysis compares by actual usage and connection patterns
@@ -95,7 +96,9 @@ export function SocialInfluenceContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Social Influence Analysis</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {PAGE_TITLES.socialInfluenceAnalysis}
+          </h2>
           <p className="text-muted-foreground">
             Impact of social connectedness on behavior change
           </p>

@@ -1,38 +1,25 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from "@/components/ui/chart";
-import {
-  Bar,
-  BarChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Area,
-  AreaChart,
-} from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
-import { analyticsApi, type Sustainability } from "@/lib/analytics-api";
+import { BarChartCard } from "@/components/ui/bar-chart-card";
+import { AreaChartCard } from "@/components/ui/area-chart-card";
+import { analyticsApi } from "@/lib/analytics-api";
+import { type Sustainability } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NoDataCard } from "@/components/ui/no-data-card";
+import { useAnalyticsFilters } from "@/hooks/use-analytics-filters";
+import {
+  aggregateDistribution,
+  buildGradeSeries,
+  buildGradeTrend,
+  normalizeGradeTotals,
+  SCORE_GRADES,
+} from "@/lib/metrics-transforms";
+import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function SustainabilityContent() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [typeOfMeal, setTypeOfMeal] = useState("");
+  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal } = useAnalyticsFilters();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Sustainability[]>([]);
 
@@ -40,8 +27,8 @@ export function SustainabilityContent() {
     setLoading(true);
     try {
       const result = await analyticsApi.sustainability({
-        from: from || undefined,
-        to: to || undefined,
+        periodStart: periodStart || undefined,
+        periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
       });
       setData(result);
@@ -50,75 +37,36 @@ export function SustainabilityContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, typeOfMeal]);
+  }, [periodStart, periodEnd, typeOfMeal]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   // --- derived ---
+  const nutriScoreData = buildGradeSeries(
+    normalizeGradeTotals(
+      aggregateDistribution(data, (row) => row.nutriScoreDistribution),
+    ),
+  );
 
-  // Nutri-Score distribution (aggregate across all rows)
-  const nutriScoreAgg: Record<string, number> = {};
-  const ecoScoreAgg: Record<string, number> = {};
-  for (const row of data) {
-    if (row.nutriScoreDistribution) {
-      for (const [grade, count] of Object.entries(
-        row.nutriScoreDistribution,
-      )) {
-        nutriScoreAgg[grade] = (nutriScoreAgg[grade] ?? 0) + (count as number);
-      }
-    }
-    if (row.ecoScoreDistribution) {
-      for (const [grade, count] of Object.entries(
-        row.ecoScoreDistribution,
-      )) {
-        ecoScoreAgg[grade] = (ecoScoreAgg[grade] ?? 0) + (count as number);
-      }
-    }
-  }
+  const ecoScoreData = buildGradeSeries(
+    normalizeGradeTotals(
+      aggregateDistribution(data, (row) => row.ecoScoreDistribution),
+    ),
+  );
 
-  const GRADES = ["A", "B", "C", "D", "E"];
-  const gradeCount = (agg: Record<string, number>, g: string) =>
-    (agg[g.toLowerCase()] ?? 0) + (agg[g] ?? 0);
+  const nutriTrendData = buildGradeTrend(
+    data,
+    (row) => row.date,
+    (row) => row.nutriScoreDistribution,
+  );
 
-  const nutriScoreData = GRADES
-    .filter((g) => gradeCount(nutriScoreAgg, g) > 0)
-    .map((g) => ({ grade: g, count: gradeCount(nutriScoreAgg, g) }));
-
-  const ecoScoreData = GRADES
-    .filter((g) => gradeCount(ecoScoreAgg, g) > 0)
-    .map((g) => ({ grade: g, count: gradeCount(ecoScoreAgg, g) }));
-
-  // Nutri-Score trend over time (stacked area)
-  const nutriTrendMap: Record<string, Record<string, number>> = {};
-  for (const row of data) {
-    if (!row.nutriScoreDistribution) continue;
-    const d = row.date.slice(0, 10);
-    if (!nutriTrendMap[d]) nutriTrendMap[d] = {};
-    for (const [grade, count] of Object.entries(row.nutriScoreDistribution)) {
-      const g = grade.toUpperCase();
-      nutriTrendMap[d][g] = (nutriTrendMap[d][g] ?? 0) + (count as number);
-    }
-  }
-  const nutriTrendData = Object.entries(nutriTrendMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, grades]) => ({ date, ...grades }));
-
-  // Eco-Score trend over time (stacked area)
-  const ecoTrendMap: Record<string, Record<string, number>> = {};
-  for (const row of data) {
-    if (!row.ecoScoreDistribution) continue;
-    const d = row.date.slice(0, 10);
-    if (!ecoTrendMap[d]) ecoTrendMap[d] = {};
-    for (const [grade, count] of Object.entries(row.ecoScoreDistribution)) {
-      const g = grade.toUpperCase();
-      ecoTrendMap[d][g] = (ecoTrendMap[d][g] ?? 0) + (count as number);
-    }
-  }
-  const ecoTrendData = Object.entries(ecoTrendMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, grades]) => ({ date, ...grades }));
+  const ecoTrendData = buildGradeTrend(
+    data,
+    (row) => row.date,
+    (row) => row.ecoScoreDistribution,
+  );
 
   const gradeColors: Record<string, string> = {
     A: "var(--chart-1)",
@@ -142,7 +90,7 @@ export function SustainabilityContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Sustainability Dashboard
+          {PAGE_TITLES.mealLog.sustainability}
         </h2>
         <p className="text-muted-foreground">
           Nutri-Score &amp; Eco-Score distributions and trends
@@ -150,198 +98,84 @@ export function SustainabilityContent() {
       </div>
 
       <AnalyticsFiltersBar
-        from={from}
-        to={to}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
         typeOfMeal={typeOfMeal}
-        onFromChange={setFrom}
-        onToChange={setTo}
+        onPeriodStartChange={setPeriodStart}
+        onPeriodEndChange={setPeriodEnd}
         onTypeOfMealChange={setTypeOfMeal}
         onApply={fetchData}
       />
 
       {data.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-muted-foreground">
-              No published sustainability data available.
-            </p>
-          </CardContent>
-        </Card>
+        <NoDataCard message="No published sustainability data available." />
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2">
             {/* Nutri-Score Distribution */}
             {nutriScoreData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Nutri-Score Distribution</CardTitle>
-                  <CardDescription>
-                    Number of meals by Nutri-Score grade (A–E)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      count: {
-                        label: "Meals",
-                        color: "var(--chart-2)",
-                      },
-                    }}
-                    className="h-[300px] w-full aspect-auto"
-                  >
-                    <BarChart data={nutriScoreData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="grade" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar
-                        dataKey="count"
-                        fill="var(--chart-2)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-                <CardFooter className="text-xs text-muted-foreground">
-                  Grade A = highest nutritional quality
-                </CardFooter>
-              </Card>
+              <BarChartCard
+                title="Nutri-Score Distribution"
+                description="Number of meals by Nutri-Score grade (A–E)"
+                config={{ count: { label: "Meals", color: "var(--chart-2)" } }}
+                data={nutriScoreData as unknown as Record<string, unknown>[]}
+                bars={[{ dataKey: "count", fill: "var(--chart-2)" }]}
+                xAxisKey="grade"
+                height="h-[300px]"
+                footer="Grade A = highest nutritional quality"
+              />
             )}
 
             {/* Eco-Score Distribution */}
             {ecoScoreData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Eco-Score Distribution</CardTitle>
-                  <CardDescription>
-                    Number of meals by Eco-Score grade (A–E)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      count: {
-                        label: "Meals",
-                        color: "var(--chart-4)",
-                      },
-                    }}
-                    className="h-[300px] w-full aspect-auto"
-                  >
-                    <BarChart data={ecoScoreData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="grade" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar
-                        dataKey="count"
-                        fill="var(--chart-4)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-                <CardFooter className="text-xs text-muted-foreground">
-                  Grade A = lowest environmental impact
-                </CardFooter>
-              </Card>
+              <BarChartCard
+                title="Eco-Score Distribution"
+                description="Number of meals by Eco-Score grade (A–E)"
+                config={{ count: { label: "Meals", color: "var(--chart-4)" } }}
+                data={ecoScoreData as unknown as Record<string, unknown>[]}
+                bars={[{ dataKey: "count", fill: "var(--chart-4)" }]}
+                xAxisKey="grade"
+                height="h-[300px]"
+                footer="Grade A = lowest environmental impact"
+              />
             )}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Nutri-Score Trend Over Time */}
             {nutriTrendData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Nutri-Score Trend</CardTitle>
-                  <CardDescription>
-                    How the A–E grade distribution shifts over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={Object.fromEntries(
-                      GRADES.map((g) => [
-                        g,
-                        { label: `Grade ${g}`, color: gradeColors[g] },
-                      ]),
-                    )}
-                    className="h-[350px] w-full aspect-auto"
-                  >
-                    <AreaChart data={nutriTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 10 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend content={<ChartLegendContent />} />
-                      {GRADES.map((g) => (
-                        <Area
-                          key={g}
-                          type="monotone"
-                          dataKey={g}
-                          stackId="1"
-                          stroke={gradeColors[g]}
-                          fill={gradeColors[g]}
-                          fillOpacity={0.5}
-                        />
-                      ))}
-                    </AreaChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+              <AreaChartCard
+                title="Nutri-Score Trend"
+                description="How the A–E grade distribution shifts over time"
+                config={Object.fromEntries(SCORE_GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
+                data={nutriTrendData as unknown as Record<string, unknown>[]}
+                areas={SCORE_GRADES.map((g) => ({
+                  dataKey: g,
+                  stroke: gradeColors[g],
+                  fill: gradeColors[g],
+                  fillOpacity: 0.5,
+                  stackId: "1",
+                }))}
+                showLegend
+              />
             )}
 
             {/* Eco-Score Trend Over Time */}
             {ecoTrendData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Eco-Score Trend</CardTitle>
-                  <CardDescription>
-                    How the A–E grade distribution shifts over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={Object.fromEntries(
-                      GRADES.map((g) => [
-                        g,
-                        { label: `Grade ${g}`, color: gradeColors[g] },
-                      ]),
-                    )}
-                    className="h-[350px] w-full aspect-auto"
-                  >
-                    <AreaChart data={ecoTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 10 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <ChartLegend content={<ChartLegendContent />} />
-                      {GRADES.map((g) => (
-                        <Area
-                          key={g}
-                          type="monotone"
-                          dataKey={g}
-                          stackId="1"
-                          stroke={gradeColors[g]}
-                          fill={gradeColors[g]}
-                          fillOpacity={0.5}
-                        />
-                      ))}
-                    </AreaChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+              <AreaChartCard
+                title="Eco-Score Trend"
+                description="How the A–E grade distribution shifts over time"
+                config={Object.fromEntries(SCORE_GRADES.map((g) => [g, { label: `Grade ${g}`, color: gradeColors[g] }]))}
+                data={ecoTrendData as unknown as Record<string, unknown>[]}
+                areas={SCORE_GRADES.map((g) => ({
+                  dataKey: g,
+                  stroke: gradeColors[g],
+                  fill: gradeColors[g],
+                  fillOpacity: 0.5,
+                  stackId: "1",
+                }))}
+                showLegend
+              />
             )}
           </div>
         </>
