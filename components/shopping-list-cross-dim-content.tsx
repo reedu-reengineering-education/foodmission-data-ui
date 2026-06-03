@@ -89,7 +89,7 @@ export function ShoppingListCrossDimContent() {
     crossPatterns.reduce<
       Record<string, { label: string; avgItemsPerList: number; count: number }>
     >((acc, r) => {
-      const label = `${r.dim1Value} / ${r.dim2Value}`;
+      const label = `${r.dim1Value} × ${r.dim2Value}`;
       if (!acc[label]) acc[label] = { label, avgItemsPerList: 0, count: 0 };
       acc[label].avgItemsPerList += r.avgItemsPerList;
       acc[label].count++;
@@ -110,7 +110,7 @@ export function ShoppingListCrossDimContent() {
         { label: string; avgUltraProcessedPct: number; count: number }
       >
     >((acc, r) => {
-      const label = `${r.dim1Value} / ${r.dim2Value}`;
+      const label = `${r.dim1Value} × ${r.dim2Value}`;
       if (!acc[label])
         acc[label] = { label, avgUltraProcessedPct: 0, count: 0 };
       acc[label].avgUltraProcessedPct += r.avgUltraProcessedPct ?? 0;
