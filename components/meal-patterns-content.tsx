@@ -150,11 +150,28 @@ export function MealPatternsContent() {
     avgItemsPerMeal: Math.round((v.items / (v.meals || 1)) * 10) / 10,
   }));
 
+  // KPI metrics
+  const kpiTotalMeals = data.reduce((s, d) => s + d.totalMeals, 0);
+  const kpiAvgItems = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + d.avgItemsPerMeal * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
+    : null;
+  const kpiAvgPantryPct = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + d.mealsFromPantryPct * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
+    : null;
+  const kpiAvgEatenOutPct = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + d.mealsEatenOutPct * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
+    : null;
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[400px] w-full" />
       </div>
     );
@@ -185,6 +202,46 @@ export function MealPatternsContent() {
         <NoDataCard message="No published meal pattern data available." />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Meals Logged</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiTotalMeals.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Across all types &amp; dates</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Items / Meal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgItems ?? "—"}</div>
+                <p className="text-xs text-muted-foreground">Average items per logged meal</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Pantry Usage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgPantryPct != null ? `${kpiAvgPantryPct}%` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Meals sourced from pantry</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Eating Out</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgEatenOutPct != null ? `${kpiAvgEatenOutPct}%` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Meals eaten outside home</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Pantry & Eaten-Out Trends */}
           <Card>
             <CardHeader>

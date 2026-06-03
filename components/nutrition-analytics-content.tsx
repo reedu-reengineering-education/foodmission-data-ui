@@ -218,11 +218,25 @@ export function NutritionAnalyticsContent() {
       p75: Math.round(d.p75Calories ?? 0),
     }));
 
+  // KPI metrics
+  const kpiTotalMeals = data.reduce((s, d) => s + d.mealCount, 0);
+  const kpiAvgCalories = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + (d.avgCalories ?? 0) * d.mealCount, 0) / kpiTotalMeals)
+    : null;
+  const kpiAvgProteins = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + (d.avgProteins ?? 0) * d.mealCount, 0) / kpiTotalMeals * 10) / 10
+    : null;
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[400px] w-full" />
         <div className="grid gap-4 md:grid-cols-2">
           <Skeleton className="h-[350px]" />
@@ -265,6 +279,46 @@ export function NutritionAnalyticsContent() {
         <NoDataCard message="No published nutrition data available for the selected filters." />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Meals Logged</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiTotalMeals.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Across all meal types &amp; dates</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Calories / Meal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgCalories != null ? `${kpiAvgCalories} kcal` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Weighted average across all meals</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Protein / Meal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgProteins != null ? `${kpiAvgProteins} g` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Weighted average across all meals</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Data Points</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{trendData.length}</div>
+                <p className="text-xs text-muted-foreground">Unique dates with nutrition data</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Calorie Trend */}
           <AreaChartCard
             title="Daily Average Calorie Trend"

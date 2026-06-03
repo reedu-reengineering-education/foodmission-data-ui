@@ -106,11 +106,22 @@ export function FoodPopularityContent() {
     uniqueUsers: f.uniqueUsers,
   }));
 
+  // KPI metrics
+  const kpiUniqueFoods = Object.keys(foodAgg).length;
+  const kpiTotalFrequency = data.reduce((s, d) => s + d.frequency, 0);
+  const kpiFoodGroups = new Set(data.map(d => d.foodGroup).filter(Boolean)).size;
+  const kpiTopFood = topFoods[0]?.foodName ?? "—";
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[500px] w-full" />
       </div>
     );
@@ -141,6 +152,46 @@ export function FoodPopularityContent() {
         <NoDataCard message="No published food popularity data available." />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Unique Foods Tracked</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiUniqueFoods}</div>
+                <p className="text-xs text-muted-foreground">Distinct foods across all results</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Consumption Events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiTotalFrequency.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Across all foods &amp; dates</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Food Groups</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiFoodGroups}</div>
+                <p className="text-xs text-muted-foreground">Distinct food groups represented</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Top Consumed Food</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold truncate" title={kpiTopFood}>{kpiTopFood}</div>
+                <p className="text-xs text-muted-foreground">Most frequently logged food item</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Top Foods Horizontal Bar */}
           <HorizontalBarChartCard
             title="Top 20 Most Consumed Foods"

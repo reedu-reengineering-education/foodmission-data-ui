@@ -133,11 +133,32 @@ export function MealClassificationContent() {
     ultraProcessedPct: row.ultraProcessedPct ?? 0,
   }));
 
+  // KPI metrics
+  const kpiTotalMeals = data.reduce((s, d) => s + d.totalMeals, 0);
+  const kpiAvgVegetarianPct = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + d.vegetarianPct * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
+    : null;
+  const kpiAvgVeganPct = kpiTotalMeals > 0
+    ? Math.round(data.reduce((s, d) => s + d.veganPct * d.totalMeals, 0) / kpiTotalMeals * 10) / 10
+    : null;
+  const kpiAvgUltraPct = (() => {
+    const rows = data.filter(d => d.avgUltraProcessedPct != null);
+    const total = rows.reduce((s, d) => s + d.totalMeals, 0);
+    return total > 0
+      ? Math.round(rows.reduce((s, d) => s + (d.avgUltraProcessedPct ?? 0) * d.totalMeals, 0) / total * 10) / 10
+      : null;
+  })();
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[400px] w-full" />
       </div>
     );
@@ -174,6 +195,46 @@ export function MealClassificationContent() {
         <NoDataCard message="No published classification data available." />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Meals Analyzed</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiTotalMeals.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Across all types &amp; dates</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Vegetarian</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgVegetarianPct != null ? `${kpiAvgVegetarianPct}%` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Weighted average across all meals</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Vegan</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgVeganPct != null ? `${kpiAvgVeganPct}%` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Weighted average across all meals</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Ultra-Processed</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiAvgUltraPct != null ? `${kpiAvgUltraPct}%` : "—"}</div>
+                <p className="text-xs text-muted-foreground">Weighted average across all meals</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Vegetarian / Vegan / Ultra-Processed Trend */}
           <Card>
             <CardHeader>

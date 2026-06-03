@@ -4,6 +4,12 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoDataCard } from "@/components/ui/no-data-card";
 import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
+import {
+  Card,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { shoppingListApi } from "@/lib/analytics-api";
 import {
@@ -109,11 +115,22 @@ export function ShoppingListCrossDimContent() {
     }))
     .sort((a, b) => b.avgUltraProcessedPct - a.avgUltraProcessedPct);
 
+  // KPI metrics
+  const kpiGroupCount = Math.max(crossPatternChart.length, crossClassificationChart.length);
+  const kpiTotalLists = crossPatterns.reduce((s, d) => s + d.totalLists, 0);
+  const kpiTopItemsGroup = crossPatternChart[0]?.label ?? "—";
+  const kpiTopUltraGroup = crossClassificationChart[0]?.label ?? "—";
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Skeleton className="h-[350px]" />
           <Skeleton className="h-[350px]" />
@@ -153,6 +170,46 @@ export function ShoppingListCrossDimContent() {
         />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Cross-dim Groups</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiGroupCount}</div>
+                <p className="text-xs text-muted-foreground">Unique dimension combinations</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Shopping Lists</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiTotalLists.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Across all group combinations</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Most Items Group</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold truncate" title={kpiTopItemsGroup}>{kpiTopItemsGroup}</div>
+                <p className="text-xs text-muted-foreground">Highest avg items per list</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Highest Ultra-Processed</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold truncate" title={kpiTopUltraGroup}>{kpiTopUltraGroup}</div>
+                <p className="text-xs text-muted-foreground">Most ultra-processed items group</p>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             {crossPatternChart.length > 0 && (
               <HorizontalBarChartCard

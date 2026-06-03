@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import {
+  Card,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import {
@@ -149,11 +155,22 @@ export function DemographicInsightsContent() {
     classification.length === 0 &&
     patterns.length === 0;
 
+  // KPI metrics
+  const kpiGroupCount = Math.max(nutritionChart.length, classChart.length, patternChart.length);
+  const kpiTotalMeals = patterns.reduce((s, d) => s + d.totalMeals, 0);
+  const kpiTopCalGroup = nutritionChart[0]?.label ?? "—";
+  const kpiMostVegGroup = classChart[0]?.label ?? "—";
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[400px] w-full" />
         <Skeleton className="h-[400px] w-full" />
       </div>
@@ -193,6 +210,46 @@ export function DemographicInsightsContent() {
         />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Cross-dim Groups</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiGroupCount}</div>
+                <p className="text-xs text-muted-foreground">Unique demographic combinations</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Meals in Analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiTotalMeals.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Across all demographic groups</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Highest-Calorie Group</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold truncate" title={kpiTopCalGroup}>{kpiTopCalGroup}</div>
+                <p className="text-xs text-muted-foreground">Most calories on average</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Most Vegetarian Group</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold truncate" title={kpiMostVegGroup}>{kpiMostVegGroup}</div>
+                <p className="text-xs text-muted-foreground">Highest vegetarian meal rate</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Cross-dim Nutrition */}
           {nutritionChart.length > 0 && (
             <HorizontalBarChartCard
