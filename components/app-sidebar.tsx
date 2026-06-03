@@ -3,9 +3,6 @@
 import * as React from "react";
 import {
   LayoutDashboard,
-  GalleryVerticalEnd,
-  AudioWaveform,
-  Command,
   Soup,
   Boxes,
   ShoppingCart,
@@ -19,7 +16,6 @@ import {
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -30,6 +26,8 @@ import {
 import { getClientSession } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
+import Image from "next/image";
+import Link from "next/link";
 
 // FOODMISSION Data Dashboard Navigation
 const data = {
@@ -38,23 +36,6 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
-    {
-      name: "FOODMISSION EU",
-      logo: GalleryVerticalEnd,
-      plan: "Research",
-    },
-    {
-      name: "Regional Partners",
-      logo: AudioWaveform,
-      plan: "Collaboration",
-    },
-    {
-      name: "Analytics Team",
-      logo: Command,
-      plan: "Data Science",
-    },
-  ],
   navMain: [
     {
       title: "Dashboard",
@@ -71,7 +52,10 @@ const data = {
         { title: "Meal Patterns", url: "/meal-log/meal-patterns" },
         { title: "Sustainability", url: "/meal-log/sustainability" },
         { title: "Meal Classification", url: "/meal-log/meal-classification" },
-        { title: "Demographic Insights", url: "/meal-log/demographic-insights" },
+        {
+          title: "Demographic Insights",
+          url: "/meal-log/demographic-insights",
+        },
       ],
     },
     {
@@ -85,7 +69,10 @@ const data = {
         { title: "Meal Patterns", url: "/meal-log/meal-patterns" },
         { title: "Sustainability", url: "/meal-log/sustainability" },
         { title: "Meal Classification", url: "/meal-log/meal-classification" },
-        { title: "Demographic Insights", url: "/meal-log/demographic-insights" },
+        {
+          title: "Demographic Insights",
+          url: "/meal-log/demographic-insights",
+        },
       ],
     },
     {
@@ -97,7 +84,10 @@ const data = {
         { title: "List Patterns", url: "/shopping-list/list-patterns" },
         { title: "Nutrition Profile", url: "/shopping-list/nutrition-profile" },
         { title: "Sustainability", url: "/shopping-list/sustainability" },
-        { title: "Demographic Insights", url: "/shopping-list/demographic-insights" },
+        {
+          title: "Demographic Insights",
+          url: "/shopping-list/demographic-insights",
+        },
         { title: "Cross-dimensional", url: "/shopping-list/cross-dimensional" },
       ],
     },
@@ -154,7 +144,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     email: string;
     avatar: string;
   }>();
-  const { capabilities: mealLogCapabilities } = useSourceCapabilities("meal-log");
+  const { capabilities: mealLogCapabilities } =
+    useSourceCapabilities("meal-log");
   const { capabilities: shoppingListCapabilities } =
     useSourceCapabilities("shopping-list");
 
@@ -175,10 +166,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     { title: "Item Popularity", url: "/shopping-list/item-popularity" },
     { title: "List Patterns", url: "/shopping-list/list-patterns" },
     ...(shoppingListCapabilities.supportsNutrition
-      ? [{ title: "Nutrition Profile", url: "/shopping-list/nutrition-profile" }]
+      ? [
+          {
+            title: "Nutrition Profile",
+            url: "/shopping-list/nutrition-profile",
+          },
+        ]
       : []),
     { title: "Sustainability", url: "/shopping-list/sustainability" },
-    { title: "Demographic Insights", url: "/shopping-list/demographic-insights" },
+    {
+      title: "Demographic Insights",
+      url: "/shopping-list/demographic-insights",
+    },
     { title: "Cross-dimensional", url: "/shopping-list/cross-dimensional" },
   ];
 
@@ -219,7 +218,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <Link
+          href="/"
+          className="flex items-center px-2 py-3 group-data-[collapsible=icon]:justify-center"
+        >
+          <Image
+            src="/logos/Foodmission_logo_horizontal_white.png"
+            alt="Foodmission"
+            width={220}
+            height={52}
+            className="w-full object-contain object-left group-data-[collapsible=icon]:hidden"
+            priority
+          />
+          <Image
+            src="/logos/Foodmission_logo_horizontal_white.png"
+            alt="Foodmission"
+            width={32}
+            height={32}
+            className="h-7 w-7 object-contain hidden group-data-[collapsible=icon]:block"
+            priority
+          />
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} label="Citizen Science Data" />

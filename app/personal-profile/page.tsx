@@ -120,14 +120,13 @@ export default async function PersonalProfilePage({
   const wasteQuery =
     dateFrom && dateTo ? `?dateFrom=${dateFrom}&dateTo=${dateTo}` : "";
 
-  const [totalLogsRes, filteredLogsRes, wasteStats, pantry] = token
+  const [filteredLogsRes, wasteStats, pantry] = token
     ? await Promise.all([
-        apiFetch<MealLogsResponse>(`/meal-logs?limit=1&page=1`, token),
         apiFetch<MealLogsResponse>(`/meal-logs?limit=50${dateQuery}`, token),
         apiFetch<WasteStats>(`/food-waste/statistics${wasteQuery}`, token),
         apiFetch<PantryResponse>(`/pantry`, token),
       ])
-    : [null, null, null, null];
+    : [null, null, null];
 
   const now2 = new Date();
   const expiringCount =
@@ -137,7 +136,7 @@ export default async function PersonalProfilePage({
       return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000;
     }).length ?? 0;
 
-  const totalMeals = totalLogsRes?.total ?? 0;
+  const totalMeals = filteredLogsRes?.total ?? 0;
   const filteredLogs = filteredLogsRes?.data ?? [];
 
   // Only average over meals that actually have a calories value
