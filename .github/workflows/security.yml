@@ -21,7 +21,7 @@ jobs:
 
       - name: Run TruffleHog (pull request)
         if: github.event_name == 'pull_request'
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.95.5
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
@@ -30,7 +30,7 @@ jobs:
 
       - name: Run TruffleHog (push)
         if: github.event_name == 'push'
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.95.5
         with:
           path: ./
           base: ${{ github.event.before }}
@@ -39,7 +39,7 @@ jobs:
 
       - name: Run TruffleHog (scheduled)
         if: github.event_name == 'schedule'
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.95.5
         with:
           path: ./
           extra_args: --debug --only-verified
@@ -59,11 +59,11 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        # Skip Next optional sharp/libvips (LGPL); app does not use next/image
         run: npm ci --omit=optional
 
       - name: Check production licenses
         run: |
-          # Install without optional deps so Next sharp/libvips (LGPL) is not in the tree
           npx --yes license-checker@25 --production \
             --excludePackages 'foodmission-data-ui@0.1.0' \
             --onlyAllow \
@@ -72,6 +72,9 @@ jobs:
   sast-scan:
     name: Static Application Security Testing
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
 
     steps:
       - name: Checkout code
