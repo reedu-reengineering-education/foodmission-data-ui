@@ -67,6 +67,8 @@ New PRs use [`.github/pull_request_template.md`](.github/pull_request_template.m
 
 Workflows run on push and pull requests to `main`. CI uses placeholder env vars for build-time auth config (see `env` in `ci.yml`).
 
+**License policy:** production deps must use permissive licenses (MIT/Apache/BSD/ISC, etc.). The license job runs `npm ci --omit=optional` so Sharp/libvips (LGPL) is not installed—this app does not use `next/image` (`images.unoptimized` in `next.config.ts`). A small documented exception list covers unavoidable transitive metadata (e.g. `caniuse-lite` CC-BY-4.0, MapLibre jsonlint). Build/lint jobs use a full `npm ci` (Tailwind needs optional native bindings).
+
 ## Learn more
 
 - [Next.js Documentation](https://nextjs.org/docs)

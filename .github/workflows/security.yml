@@ -59,12 +59,15 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --omit=optional
 
       - name: Check production licenses
         run: |
-          npx --yes license-checker --production --onlyAllow \
-            'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0'
+          # Install without optional deps so Next sharp/libvips (LGPL) is not in the tree
+          npx --yes license-checker@25 --production \
+            --excludePackages 'foodmission-data-ui@0.1.0' \
+            --onlyAllow \
+            'MIT;MIT*;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-4.0;(MIT OR Apache-2.0);MIT AND ISC;Custom: https://github.com/tmcw/jsonlint'
 
   sast-scan:
     name: Static Application Security Testing
