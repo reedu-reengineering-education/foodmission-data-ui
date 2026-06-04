@@ -1,0 +1,82 @@
+version: 2
+updates:
+  # npm dependencies (package-lock.json at repo root)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+      time: '09:00'
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'chore'
+      prefix-development: 'chore'
+      include: 'scope'
+    groups:
+      dev-dependencies:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
+      nextjs:
+        patterns:
+          - 'next'
+          - 'eslint-config-next'
+        update-types:
+          - 'minor'
+          - 'patch'
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+        update-types:
+          - 'minor'
+          - 'patch'
+      ui:
+        patterns:
+          - 'radix-ui'
+          - '@radix-ui/*'
+          - 'class-variance-authority'
+          - 'clsx'
+          - 'tailwind-merge'
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+          - 'lucide-react'
+        update-types:
+          - 'minor'
+          - 'patch'
+      charts-and-maps:
+        patterns:
+          - 'recharts'
+          - 'maplibre-gl'
+        update-types:
+          - 'minor'
+          - 'patch'
+    ignore:
+      # Review major framework bumps manually
+      - dependency-name: 'next'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint-config-next'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-dom'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'better-auth'
+        update-types: ['version-update:semver-major']
+
+  # GitHub Actions (once workflows are added under .github/workflows/)
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'wednesday'
+      time: '09:00'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
