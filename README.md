@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FoodMission Data UI
 
-## Getting Started
+Analytics dashboard for FoodMission (Next.js App Router, React, Tailwind).
 
-First, run the development server:
+## Prerequisites
+
+- **Node.js 20** — use [`.nvmrc`](.nvmrc) (`nvm use` / `fnm use`)
+- npm (lockfile: `package-lock.json`)
+
+## Getting started
 
 ```bash
+npm ci
+cp .env.example .env   # then edit values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [`.env.example`](.env.example):
 
-## Learn More
+| Variable | Purpose |
+| -------- | ------- |
+| `NEXT_PUBLIC_API_URL` | Analytics API base URL |
+| `KEYCLOAK_*` | Keycloak OIDC for Better Auth |
+| `BETTER_AUTH_SECRET` | Session signing secret |
+| `BETTER_AUTH_URL` | App base URL (e.g. `http://localhost:3000`) |
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Description |
+| ------- | ----------- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Run production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run `lint`, `typecheck`, and `build` before opening a PR (CI runs the same checks).
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Issues
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Use **New issue** and pick a template:
+
+- **Bug report** — UI / dashboard problems
+- **Feature request** — new analytics or UX
+- **Chore** — tooling, CI, dependencies
+- **Blank issue** — anything else
+
+Templates live in [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/).
+
+### Pull requests
+
+New PRs use [`.github/pull_request_template.md`](.github/pull_request_template.md) for the description checklist.
+
+### Automation
+
+| What | Where |
+| ---- | ----- |
+| **CI** (lint, typecheck, build, CodeQL) | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| **Security** (TruffleHog, license check, Semgrep) | [`.github/workflows/security.yml`](.github/workflows/security.yml) |
+| **Dependabot** (npm daily, Actions weekly) | [`.github/dependabot.yml`](.github/dependabot.yml) |
+
+Workflows run on push and pull requests to `main`. CI uses placeholder env vars for build-time auth config (see `env` in `ci.yml`).
+
+## Learn more
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Deploy on Vercel](https://nextjs.org/docs/app/building-your-application/deploying)
