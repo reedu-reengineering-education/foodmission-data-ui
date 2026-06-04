@@ -23,8 +23,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Area,
-  AreaChart,
   ComposedChart,
 } from "recharts";
 import { PAGE_TITLES } from "@/lib/page-titles";
