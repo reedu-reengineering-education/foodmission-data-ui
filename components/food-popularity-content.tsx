@@ -48,7 +48,7 @@ export function FoodPopularityContent() {
         periodStart: periodStart || undefined,
         periodEnd: periodEnd || undefined,
         typeOfMeal: typeOfMeal || undefined,
-        limit: "30",
+        limit: "0",
       });
       setData(result);
     } catch (e) {
@@ -123,8 +123,9 @@ export function FoodPopularityContent() {
   // KPI metrics
   const kpiUniqueFoods = Object.keys(foodAgg).length;
   const kpiTotalFrequency = data.reduce((s, d) => s + d.frequency, 0);
-  const kpiFoodGroups = new Set(data.map((d) => d.foodGroup).filter(Boolean))
-    .size;
+  const kpiGenericFoods = new Set(
+    data.filter((d) => d.itemType === "generic_food").map((d) => d.foodName),
+  ).size;
   const kpiTopFood = topFoods[0]?.foodName ?? "—";
 
   if (loading) {
@@ -195,12 +196,12 @@ export function FoodPopularityContent() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>Food Groups</CardDescription>
+                <CardDescription>Distinct Generic Foods</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{kpiFoodGroups}</div>
+                <div className="text-2xl font-bold">{kpiGenericFoods}</div>
                 <p className="text-xs text-muted-foreground">
-                  Distinct food groups represented
+                  Unique generic food items logged
                 </p>
               </CardContent>
             </Card>
