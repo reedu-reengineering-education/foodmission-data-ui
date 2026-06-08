@@ -16,13 +16,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import {
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
+import { Line, LineChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
 import { BarChartCard } from "@/components/ui/bar-chart-card";
 import { AreaChartCard } from "@/components/ui/area-chart-card";
@@ -36,7 +30,16 @@ import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function NutritionAnalyticsContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dimension: demoDimension, setDimension: setDemoDimension } = useAnalyticsFiltersWithDimension();
+  const {
+    periodStart,
+    setPeriodStart,
+    periodEnd,
+    setPeriodEnd,
+    typeOfMeal,
+    setTypeOfMeal,
+    dimension: demoDimension,
+    setDimension: setDemoDimension,
+  } = useAnalyticsFiltersWithDimension();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DailyNutrition[]>([]);
   const [demoData, setDemoData] = useState<DemographicNutrition[]>([]);
@@ -70,7 +73,13 @@ export function NutritionAnalyticsContent() {
     } finally {
       setLoading(false);
     }
-  }, [periodStart, periodEnd, typeOfMeal, demoDimension, capabilities.supportsNutrition]);
+  }, [
+    periodStart,
+    periodEnd,
+    typeOfMeal,
+    demoDimension,
+    capabilities.supportsNutrition,
+  ]);
 
   useEffect(() => {
     fetchData();
@@ -218,11 +227,34 @@ export function NutritionAnalyticsContent() {
       p75: Math.round(d.p75Calories ?? 0),
     }));
 
+  // KPI metrics
+  const kpiTotalMeals = data.reduce((s, d) => s + d.mealCount, 0);
+  const kpiAvgCalories =
+    kpiTotalMeals > 0
+      ? Math.round(
+          data.reduce((s, d) => s + (d.avgCalories ?? 0) * d.mealCount, 0) /
+            kpiTotalMeals,
+        )
+      : null;
+  const kpiAvgProteins =
+    kpiTotalMeals > 0
+      ? Math.round(
+          (data.reduce((s, d) => s + (d.avgProteins ?? 0) * d.mealCount, 0) /
+            kpiTotalMeals) *
+            10,
+        ) / 10
+      : null;
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[400px] w-full" />
         <div className="grid gap-4 md:grid-cols-2">
           <Skeleton className="h-[350px]" />
@@ -265,13 +297,76 @@ export function NutritionAnalyticsContent() {
         <NoDataCard message="No published nutrition data available for the selected filters." />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Meals Logged</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {kpiTotalMeals.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Across all meal types &amp; dates
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Calories / Meal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {kpiAvgCalories != null ? `${kpiAvgCalories} kcal` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Weighted average across all meals
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Protein / Meal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {kpiAvgProteins != null ? `${kpiAvgProteins} g` : "—"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Weighted average across all meals
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Data Points</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{trendData.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  Unique dates with nutrition data
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Calorie Trend */}
           <AreaChartCard
             title="Daily Average Calorie Trend"
             description="Weighted average calories per meal across all users over time"
-            config={{ avgCalories: { label: "Avg Calories", color: "var(--chart-1)" } }}
+            config={{
+              avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
+            }}
             data={trendData as unknown as Record<string, unknown>[]}
-            areas={[{ dataKey: "avgCalories", stroke: "var(--chart-1)", fill: "var(--chart-1)", fillOpacity: 0.3 }]}
+            areas={[
+              {
+                dataKey: "avgCalories",
+                stroke: "var(--chart-1)",
+                fill: "var(--chart-1)",
+                fillOpacity: 0.3,
+              },
+            ]}
             yAxisLabel="kcal"
             footer={`${trendData.length} data points · ${data.reduce((s, d) => s + d.mealCount, 0)} total meals`}
           />
@@ -279,71 +374,73 @@ export function NutritionAnalyticsContent() {
           <div className="grid gap-4 md:grid-cols-2">
             {/* Macronutrient Trend */}
             <Card>
-            <CardHeader>
-              <CardTitle>Macronutrient Trends</CardTitle>
-              <CardDescription>
-                Average protein, fat &amp; carbs (g) over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  avgProteins: {
-                    label: "Protein (g)",
-                    color: "var(--chart-2)",
-                  },
-                  avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
-                  avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
-                }}
-                className="h-[350px] w-full aspect-auto"
-              >
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Line
-                    type="monotone"
-                    dataKey="avgProteins"
-                    stroke="var(--chart-2)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="avgFat"
-                    stroke="var(--chart-3)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="avgCarbs"
-                    stroke="var(--chart-4)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+              <CardHeader>
+                <CardTitle>Macronutrient Trends</CardTitle>
+                <CardDescription>
+                  Average protein, fat &amp; carbs (g) over time
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer
+                  config={{
+                    avgProteins: {
+                      label: "Protein (g)",
+                      color: "var(--chart-2)",
+                    },
+                    avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
+                    avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
+                  }}
+                  className="h-[350px] w-full aspect-auto"
+                >
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                    <Line
+                      type="monotone"
+                      dataKey="avgProteins"
+                      stroke="var(--chart-2)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="avgFat"
+                      stroke="var(--chart-3)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="avgCarbs"
+                      stroke="var(--chart-4)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-          {/* By Meal Type */}
-          <BarChartCard
-            title="Nutrition by Meal Type"
-            description="Average calories per meal type"
-            config={{ avgCalories: { label: "Avg Calories", color: "var(--chart-1)" } }}
-            data={mealTypeData as unknown as Record<string, unknown>[]}
-            bars={[{ dataKey: "avgCalories", fill: "var(--chart-1)" }]}
-            xAxisKey="meal"
-          />
+            {/* By Meal Type */}
+            <BarChartCard
+              title="Nutrition by Meal Type"
+              description="Average calories per meal type"
+              config={{
+                avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
+              }}
+              data={mealTypeData as unknown as Record<string, unknown>[]}
+              bars={[{ dataKey: "avgCalories", fill: "var(--chart-1)" }]}
+              xAxisKey="meal"
+            />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -412,8 +509,14 @@ export function NutritionAnalyticsContent() {
                 title={`Nutrition by ${DIMENSION_LABELS[demoDimension] ?? demoDimension}`}
                 description="Average calories per demographic group (k≥5 anonymity)"
                 config={{
-                  avgCalories: { label: "Avg Calories", color: "var(--chart-1)" },
-                  avgProteins: { label: "Protein (g)", color: "var(--chart-2)" },
+                  avgCalories: {
+                    label: "Avg Calories",
+                    color: "var(--chart-1)",
+                  },
+                  avgProteins: {
+                    label: "Protein (g)",
+                    color: "var(--chart-2)",
+                  },
                   avgFat: { label: "Fat (g)", color: "var(--chart-3)" },
                   avgCarbs: { label: "Carbs (g)", color: "var(--chart-4)" },
                 }}

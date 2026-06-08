@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { AnalyticsFiltersBar } from "@/components/analytics-filters";
+import {
+  Card,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { HorizontalBarChartCard } from "@/components/ui/horizontal-bar-chart-card";
 import { analyticsApi } from "@/lib/analytics-api";
 import {
@@ -17,7 +23,18 @@ import { useSourceCapabilities } from "@/hooks/use-source-capabilities";
 import { PAGE_TITLES } from "@/lib/page-titles";
 
 export function DemographicInsightsContent() {
-  const { periodStart, setPeriodStart, periodEnd, setPeriodEnd, typeOfMeal, setTypeOfMeal, dim1, setDim1, dim2, setDim2 } = useAnalyticsFiltersWithCrossDim();
+  const {
+    periodStart,
+    setPeriodStart,
+    periodEnd,
+    setPeriodEnd,
+    typeOfMeal,
+    setTypeOfMeal,
+    dim1,
+    setDim1,
+    dim2,
+    setDim2,
+  } = useAnalyticsFiltersWithCrossDim();
   const { capabilities } = useSourceCapabilities("meal-log");
   const [loading, setLoading] = useState(true);
   const [nutrition, setNutrition] = useState<CrossDimNutrition[]>([]);
@@ -52,7 +69,14 @@ export function DemographicInsightsContent() {
     } finally {
       setLoading(false);
     }
-  }, [periodStart, periodEnd, typeOfMeal, dim1, dim2, capabilities.supportsCrossDimNutrition]);
+  }, [
+    periodStart,
+    periodEnd,
+    typeOfMeal,
+    dim1,
+    dim2,
+    capabilities.supportsCrossDimNutrition,
+  ]);
 
   useEffect(() => {
     fetchData();
@@ -63,12 +87,24 @@ export function DemographicInsightsContent() {
   // Nutrition by cross-dim group
   const nutritionGrouped: Record<
     string,
-    { calories: number; proteins: number; fat: number; carbs: number; count: number }
+    {
+      calories: number;
+      proteins: number;
+      fat: number;
+      carbs: number;
+      count: number;
+    }
   > = {};
   for (const row of nutrition) {
     const key = `${row.dim1Value} × ${row.dim2Value}`;
     if (!nutritionGrouped[key])
-      nutritionGrouped[key] = { calories: 0, proteins: 0, fat: 0, carbs: 0, count: 0 };
+      nutritionGrouped[key] = {
+        calories: 0,
+        proteins: 0,
+        fat: 0,
+        carbs: 0,
+        count: 0,
+      };
     const b = nutritionGrouped[key];
     b.calories += (row.avgCalories ?? 0) * row.mealCount;
     b.proteins += (row.avgProteins ?? 0) * row.mealCount;
@@ -89,12 +125,24 @@ export function DemographicInsightsContent() {
   // Classification by cross-dim group
   const classGrouped: Record<
     string,
-    { veg: number; vegan: number; ultra: number; meals: number; ultraCount: number }
+    {
+      veg: number;
+      vegan: number;
+      ultra: number;
+      meals: number;
+      ultraCount: number;
+    }
   > = {};
   for (const row of classification) {
     const key = `${row.dim1Value} × ${row.dim2Value}`;
     if (!classGrouped[key])
-      classGrouped[key] = { veg: 0, vegan: 0, ultra: 0, meals: 0, ultraCount: 0 };
+      classGrouped[key] = {
+        veg: 0,
+        vegan: 0,
+        ultra: 0,
+        meals: 0,
+        ultraCount: 0,
+      };
     const b = classGrouped[key];
     b.veg += row.vegetarianPct * row.totalMeals;
     b.vegan += row.veganPct * row.totalMeals;
@@ -110,9 +158,7 @@ export function DemographicInsightsContent() {
       vegetarianPct: Math.round((v.veg / (v.meals || 1)) * 10) / 10,
       veganPct: Math.round((v.vegan / (v.meals || 1)) * 10) / 10,
       ultraProcessedPct:
-        v.ultraCount > 0
-          ? Math.round((v.ultra / v.ultraCount) * 10) / 10
-          : 0,
+        v.ultraCount > 0 ? Math.round((v.ultra / v.ultraCount) * 10) / 10 : 0,
     }))
     .sort((a, b) => b.vegetarianPct - a.vegetarianPct);
 
@@ -149,11 +195,26 @@ export function DemographicInsightsContent() {
     classification.length === 0 &&
     patterns.length === 0;
 
+  // KPI metrics
+  const kpiGroupCount = Math.max(
+    nutritionChart.length,
+    classChart.length,
+    patternChart.length,
+  );
+  const kpiTotalMeals = patterns.reduce((s, d) => s + d.totalMeals, 0);
+  const kpiTopCalGroup = nutritionChart[0]?.label ?? "—";
+  const kpiMostVegGroup = classChart[0]?.label ?? "—";
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
         <Skeleton className="h-[400px] w-full" />
         <Skeleton className="h-[400px] w-full" />
       </div>
@@ -167,8 +228,8 @@ export function DemographicInsightsContent() {
           {PAGE_TITLES.mealLog.demographicInsights}
         </h2>
         <p className="text-muted-foreground">
-          Cross-dimensional analysis — combine two demographic dimensions
-          (k≥20 anonymity)
+          Cross-dimensional analysis — combine two demographic dimensions (k≥20
+          anonymity)
         </p>
       </div>
 
@@ -193,6 +254,66 @@ export function DemographicInsightsContent() {
         />
       ) : (
         <>
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Cross-dim Groups</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpiGroupCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  Unique demographic combinations
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Meals in Analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {kpiTotalMeals.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Across all demographic groups
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Highest-Calorie Group</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="text-lg font-bold truncate"
+                  title={kpiTopCalGroup}
+                >
+                  {kpiTopCalGroup}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Most calories on average
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Most Vegetarian Group</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="text-lg font-bold truncate"
+                  title={kpiMostVegGroup}
+                >
+                  {kpiMostVegGroup}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Highest vegetarian meal rate
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Cross-dim Nutrition */}
           {nutritionChart.length > 0 && (
             <HorizontalBarChartCard
@@ -224,7 +345,10 @@ export function DemographicInsightsContent() {
                 title={`Classification by ${crossLabel}`}
                 description="Vegetarian/vegan % per group"
                 config={{
-                  vegetarianPct: { label: "Vegetarian %", color: "var(--chart-1)" },
+                  vegetarianPct: {
+                    label: "Vegetarian %",
+                    color: "var(--chart-1)",
+                  },
                   veganPct: { label: "Vegan %", color: "var(--chart-2)" },
                 }}
                 data={classChart as unknown as Record<string, unknown>[]}
@@ -245,7 +369,10 @@ export function DemographicInsightsContent() {
                 description="Pantry usage & eating out % per group"
                 config={{
                   pantryPct: { label: "Pantry %", color: "var(--chart-1)" },
-                  eatenOutPct: { label: "Eaten Out %", color: "var(--chart-3)" },
+                  eatenOutPct: {
+                    label: "Eaten Out %",
+                    color: "var(--chart-3)",
+                  },
                 }}
                 data={patternChart as unknown as Record<string, unknown>[]}
                 bars={[
