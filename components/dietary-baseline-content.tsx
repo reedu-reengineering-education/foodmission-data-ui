@@ -18,8 +18,6 @@ import {
 import {
   Bar,
   BarChart,
-  Line,
-  LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -45,19 +43,7 @@ const dietaryCompositionData = [
   { country: "Greece", protein: 15, carbs: 48, fat: 37, fiber: 29 },
 ];
 
-// 2. Food group consumption patterns
-const foodGroupData = [
-  { country: "Norway", meat: 85, dairy: 92, grains: 78, vegetables: 65, fruits: 58, legumes: 42 },
-  { country: "Netherlands", meat: 78, dairy: 88, grains: 82, vegetables: 72, fruits: 68, legumes: 55 },
-  { country: "Germany", meat: 82, dairy: 85, grains: 80, vegetables: 68, fruits: 62, legumes: 48 },
-  { country: "Poland", meat: 88, dairy: 90, grains: 85, vegetables: 60, fruits: 55, legumes: 38 },
-  { country: "Spain", meat: 72, dairy: 75, grains: 76, vegetables: 85, fruits: 88, legumes: 68 },
-  { country: "Italy", meat: 70, dairy: 78, grains: 74, vegetables: 88, fruits: 90, legumes: 72 },
-  { country: "Slovenia", meat: 80, dairy: 82, grains: 79, vegetables: 70, fruits: 65, legumes: 52 },
-  { country: "Greece", meat: 68, dairy: 80, grains: 72, vegetables: 90, fruits: 85, legumes: 75 },
-];
-
-// 3. Carbon footprint by dietary pattern
+// 2. Carbon footprint by dietary pattern
 const carbonFootprintData = [
   { country: "Norway", baseline: 2.8, current: 2.5 },
   { country: "Netherlands", baseline: 2.4, current: 2.1 },
@@ -69,7 +55,7 @@ const carbonFootprintData = [
   { country: "Greece", baseline: 2.0, current: 1.7 },
 ];
 
-// 4. Dietary diversity index
+// 3. Dietary diversity index
 const diversityData = [
   { country: "Norway", score: 6.8 },
   { country: "Netherlands", score: 7.2 },
@@ -80,8 +66,6 @@ const diversityData = [
   { country: "Slovenia", score: 7.1 },
   { country: "Greece", score: 8.0 },
 ];
-
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"];
 
 export function DietaryBaselineContent() {
   return (

@@ -26,9 +26,6 @@ import {
   Area,
   AreaChart,
   ComposedChart,
-  Scatter,
-  ScatterChart,
-  ZAxis,
 } from "recharts";
 import { PAGE_TITLES } from "@/lib/page-titles";
 
