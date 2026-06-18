@@ -26,16 +26,22 @@ export function RecipeIngredientsContent() {
     useRecipeFilters();
 
   const [loading, setLoading] = useState(true);
-  const [topIngredients, setTopIngredients] = useState<RecipeTopIngredient[]>([]);
-  const [ingredientCategories, setIngredientCategories] = useState<RecipeIngredientCategory[]>([]);
-  const [diversity, setDiversity] = useState<RecipeDiversityMetrics | null>(null);
+  const [topIngredients, setTopIngredients] = useState<RecipeTopIngredient[]>(
+    [],
+  );
+  const [ingredientCategories, setIngredientCategories] = useState<
+    RecipeIngredientCategory[]
+  >([]);
+  const [diversity, setDiversity] = useState<RecipeDiversityMetrics | null>(
+    null,
+  );
 
   const filters = useMemo(
     () => ({
       periodStart: periodStart || undefined,
       periodEnd: periodEnd || undefined,
     }),
-    [periodStart, periodEnd]
+    [periodStart, periodEnd],
   );
 
   const fetchData = useCallback(async () => {
@@ -76,7 +82,9 @@ export function RecipeIngredientsContent() {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[100px]" />)}
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[100px]" />
+          ))}
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Skeleton className="h-[400px]" />
@@ -87,10 +95,14 @@ export function RecipeIngredientsContent() {
   }
 
   const hasData =
-    topIngredients.length > 0 || ingredientCategories.length > 0 || diversity !== null;
+    topIngredients.length > 0 ||
+    ingredientCategories.length > 0 ||
+    diversity !== null;
 
   const uniqueIngredients =
-    typeof diversity?.uniqueIngredients === "number" ? diversity.uniqueIngredients : 0;
+    typeof diversity?.uniqueIngredients === "number"
+      ? diversity.uniqueIngredients
+      : 0;
   const totalCuisines =
     typeof diversity?.totalCuisines === "number" ? diversity.totalCuisines : 0;
   const cuisineDiversityScore =
@@ -138,16 +150,22 @@ export function RecipeIngredientsContent() {
           {diversity && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Unique Ingredients</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Unique Ingredients</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {uniqueIngredients.toLocaleString()}
                   </div>
-                  <p className="text-xs text-muted-foreground">Across all recipes</p>
+                  <p className="text-xs text-muted-foreground">
+                    Across all recipes
+                  </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Cuisines Covered</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Cuisines Covered</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{totalCuisines}</div>
                   <p className="text-xs text-muted-foreground">
@@ -156,7 +174,9 @@ export function RecipeIngredientsContent() {
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Recipes with Vegetables</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Recipes with Vegetables</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {recipesWithVegetablesPct.toFixed(1)}%
@@ -167,12 +187,16 @@ export function RecipeIngredientsContent() {
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Whole Grains</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Whole Grains</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {recipesWithWholeGrainsPct.toFixed(1)}%
                   </div>
-                  <p className="text-xs text-muted-foreground">Recipes containing whole grains</p>
+                  <p className="text-xs text-muted-foreground">
+                    Recipes containing whole grains
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -198,7 +222,9 @@ export function RecipeIngredientsContent() {
               <HorizontalBarChartCard
                 title="Most Used Ingredients"
                 description="Top 20 ingredients by total usage across recipes"
-                config={{ count: { label: "Usage count", color: "var(--chart-1)" } }}
+                config={{
+                  count: { label: "Usage count", color: "var(--chart-1)" },
+                }}
                 data={topIngredientData}
                 bars={[{ dataKey: "count", fill: "var(--chart-1)" }]}
                 yAxisKey="name"
@@ -224,7 +250,9 @@ export function RecipeIngredientsContent() {
             <HorizontalBarChartCard
               title="Ingredient Categories — Recipe Reach"
               description="Number of recipes containing each ingredient category"
-              config={{ recipeCount: { label: "Recipes", color: "var(--chart-2)" } }}
+              config={{
+                recipeCount: { label: "Recipes", color: "var(--chart-2)" },
+              }}
               data={ingredientCategories.map((c) => ({
                 name: c.category,
                 recipeCount: c.recipeCount,

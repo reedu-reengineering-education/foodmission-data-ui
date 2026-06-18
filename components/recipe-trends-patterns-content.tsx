@@ -30,8 +30,12 @@ export function RecipeTrendsPatternsContent() {
 
   const [loading, setLoading] = useState(true);
   const [cuisines, setCuisines] = useState<RecipeCuisineTrend[]>([]);
-  const [cookingPatterns, setCookingPatterns] = useState<RecipeCookingPatterns[]>([]);
-  const [difficulty, setDifficulty] = useState<RecipeDifficultyDistribution[]>([]);
+  const [cookingPatterns, setCookingPatterns] = useState<
+    RecipeCookingPatterns[]
+  >([]);
+  const [difficulty, setDifficulty] = useState<RecipeDifficultyDistribution[]>(
+    [],
+  );
   const [usage, setUsage] = useState<RecipeUsageAnalytics[]>([]);
 
   const filters = useMemo(
@@ -39,7 +43,7 @@ export function RecipeTrendsPatternsContent() {
       periodStart: periodStart || undefined,
       periodEnd: periodEnd || undefined,
     }),
-    [periodStart, periodEnd]
+    [periodStart, periodEnd],
   );
 
   const asArray = <T,>(value: unknown): T[] => {
@@ -81,9 +85,9 @@ export function RecipeTrendsPatternsContent() {
     fetchData();
   }, [fetchData]);
 
-  const latestPatterns = [...cookingPatterns].sort((a, b) =>
-    b.date.localeCompare(a.date)
-  )[0] ?? null;
+  const latestPatterns =
+    [...cookingPatterns].sort((a, b) => b.date.localeCompare(a.date))[0] ??
+    null;
 
   const timeTrend = [...cookingPatterns]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -113,9 +117,18 @@ export function RecipeTrendsPatternsContent() {
 
   const cookTimeDist = latestPatterns
     ? [
-        { name: "Quick (≤30 min)", value: Math.round((latestPatterns.quickMealsPct ?? 0) * 10) / 10 },
-        { name: "Medium (30–60 min)", value: Math.round((latestPatterns.mediumMealsPct ?? 0) * 10) / 10 },
-        { name: "Long (>60 min)", value: Math.round((latestPatterns.longMealsPct ?? 0) * 10) / 10 },
+        {
+          name: "Quick (≤30 min)",
+          value: Math.round((latestPatterns.quickMealsPct ?? 0) * 10) / 10,
+        },
+        {
+          name: "Medium (30–60 min)",
+          value: Math.round((latestPatterns.mediumMealsPct ?? 0) * 10) / 10,
+        },
+        {
+          name: "Long (>60 min)",
+          value: Math.round((latestPatterns.longMealsPct ?? 0) * 10) / 10,
+        },
       ]
     : [];
 
@@ -125,7 +138,9 @@ export function RecipeTrendsPatternsContent() {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[100px]" />)}
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[100px]" />
+          ))}
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Skeleton className="h-[340px]" />
@@ -149,7 +164,8 @@ export function RecipeTrendsPatternsContent() {
           {PAGE_TITLES.recipes.trendsPatterns}
         </h2>
         <p className="text-muted-foreground">
-          Cuisine popularity, cooking time distribution, difficulty, and usage analytics
+          Cuisine popularity, cooking time distribution, difficulty, and usage
+          analytics
         </p>
       </div>
 
@@ -170,7 +186,9 @@ export function RecipeTrendsPatternsContent() {
           {latestPatterns && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Avg Cook Time</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Avg Cook Time</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {latestPatterns.avgCookTime != null
@@ -181,7 +199,9 @@ export function RecipeTrendsPatternsContent() {
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Avg Prep Time</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Avg Prep Time</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {latestPatterns.avgPrepTime != null
@@ -192,25 +212,33 @@ export function RecipeTrendsPatternsContent() {
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Quick Meals (≤30 min)</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Quick Meals (≤30 min)</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {latestPatterns.quickMealsPct != null
                       ? `${Math.round((latestPatterns.quickMealsPct ?? 0) * 10) / 10}%`
                       : "—"}
                   </div>
-                  <p className="text-xs text-muted-foreground">Of all recipes</p>
+                  <p className="text-xs text-muted-foreground">
+                    Of all recipes
+                  </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2"><CardDescription>Long Meals (&gt;60 min)</CardDescription></CardHeader>
+                <CardHeader className="pb-2">
+                  <CardDescription>Long Meals (&gt;60 min)</CardDescription>
+                </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {latestPatterns.longMealsPct != null
                       ? `${Math.round((latestPatterns.longMealsPct ?? 0) * 10) / 10}%`
                       : "—"}
                   </div>
-                  <p className="text-xs text-muted-foreground">Of all recipes</p>
+                  <p className="text-xs text-muted-foreground">
+                    Of all recipes
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -222,7 +250,9 @@ export function RecipeTrendsPatternsContent() {
               <HorizontalBarChartCard
                 title="Most Popular Cuisines"
                 description="Top cuisines by number of recipes"
-                config={{ count: { label: "Recipes", color: "var(--chart-1)" } }}
+                config={{
+                  count: { label: "Recipes", color: "var(--chart-1)" },
+                }}
                 data={cuisineData}
                 bars={[{ dataKey: "count", fill: "var(--chart-1)" }]}
                 yAxisKey="name"
@@ -234,7 +264,9 @@ export function RecipeTrendsPatternsContent() {
               <HorizontalBarChartCard
                 title="Most Cooked Cuisines"
                 description="Top cuisines by times actually cooked by users"
-                config={{ count: { label: "Times cooked", color: "var(--chart-3)" } }}
+                config={{
+                  count: { label: "Times cooked", color: "var(--chart-3)" },
+                }}
                 data={cuisineCookedData}
                 bars={[{ dataKey: "count", fill: "var(--chart-3)" }]}
                 yAxisKey="name"
@@ -261,7 +293,10 @@ export function RecipeTrendsPatternsContent() {
               <PieChartCard
                 title="Difficulty Distribution"
                 description="Easy, medium, and hard recipe breakdown"
-                data={difficulty.map((d) => ({ name: d.difficulty, value: d.count }))}
+                data={difficulty.map((d) => ({
+                  name: d.difficulty,
+                  value: d.count,
+                }))}
                 dataKey="value"
                 nameKey="name"
                 innerRadius={60}
@@ -277,13 +312,29 @@ export function RecipeTrendsPatternsContent() {
               title="Cooking & Prep Time Trend"
               description="Average cook and prep time per recipe over time (minutes)"
               config={{
-                avgCookTime: { label: "Cook time (min)", color: "var(--chart-2)" },
-                avgPrepTime: { label: "Prep time (min)", color: "var(--chart-5)" },
+                avgCookTime: {
+                  label: "Cook time (min)",
+                  color: "var(--chart-2)",
+                },
+                avgPrepTime: {
+                  label: "Prep time (min)",
+                  color: "var(--chart-5)",
+                },
               }}
               data={timeTrend as unknown as Record<string, unknown>[]}
               areas={[
-                { dataKey: "avgCookTime", stroke: "var(--chart-2)", fill: "var(--chart-2)", fillOpacity: 0.2 },
-                { dataKey: "avgPrepTime", stroke: "var(--chart-5)", fill: "var(--chart-5)", fillOpacity: 0.15 },
+                {
+                  dataKey: "avgCookTime",
+                  stroke: "var(--chart-2)",
+                  fill: "var(--chart-2)",
+                  fillOpacity: 0.2,
+                },
+                {
+                  dataKey: "avgPrepTime",
+                  stroke: "var(--chart-5)",
+                  fill: "var(--chart-5)",
+                  fillOpacity: 0.15,
+                },
               ]}
               showLegend
             />
@@ -295,13 +346,26 @@ export function RecipeTrendsPatternsContent() {
               title="Cooking Activity Over Time"
               description="Recipes cooked and repeat-cook rate per period"
               config={{
-                recipesCooked: { label: "Recipes cooked", color: "var(--chart-1)" },
+                recipesCooked: {
+                  label: "Recipes cooked",
+                  color: "var(--chart-1)",
+                },
                 repeatPct: { label: "Repeat-cook %", color: "var(--chart-4)" },
               }}
               data={usageTrend as unknown as Record<string, unknown>[]}
               areas={[
-                { dataKey: "recipesCooked", stroke: "var(--chart-1)", fill: "var(--chart-1)", fillOpacity: 0.2 },
-                { dataKey: "repeatPct", stroke: "var(--chart-4)", fill: "var(--chart-4)", fillOpacity: 0.15 },
+                {
+                  dataKey: "recipesCooked",
+                  stroke: "var(--chart-1)",
+                  fill: "var(--chart-1)",
+                  fillOpacity: 0.2,
+                },
+                {
+                  dataKey: "repeatPct",
+                  stroke: "var(--chart-4)",
+                  fill: "var(--chart-4)",
+                  fillOpacity: 0.15,
+                },
               ]}
               showLegend
             />
@@ -315,9 +379,12 @@ export function RecipeTrendsPatternsContent() {
                   key={d.difficulty}
                   className="flex items-center justify-between rounded-md border px-4 py-2"
                 >
-                  <span className="text-sm font-medium capitalize">{d.difficulty}</span>
+                  <span className="text-sm font-medium capitalize">
+                    {d.difficulty}
+                  </span>
                   <span className="text-sm text-muted-foreground">
-                    {d.count.toLocaleString()} recipes &nbsp;·&nbsp; {d.pct.toFixed(1)}%
+                    {d.count.toLocaleString()} recipes &nbsp;·&nbsp;{" "}
+                    {d.pct.toFixed(1)}%
                   </span>
                 </div>
               ))}
