@@ -103,10 +103,16 @@ const data = {
     },
     {
       title: "Recipes",
-      url: "/recipes",
+      url: "/recipes/overview",
       icon: BookOpen,
-      disabled: true,
-      items: [],
+      items: [
+        { title: "Overview & Popularity", url: "/recipes/overview" },
+        { title: "Diet & Lifestyle", url: "/recipes/diet-lifestyle" },
+        { title: "Nutrition Insights", url: "/recipes/nutrition" },
+        { title: "Sustainability", url: "/recipes/sustainability" },
+        { title: "Ingredient Analytics", url: "/recipes/ingredients" },
+        { title: "Trends & Patterns", url: "/recipes/trends-patterns" },
+      ],
     },
     {
       title: "Food Waste",

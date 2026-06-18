@@ -58,3 +58,10 @@ export function useShoppingListFilters(
     dim2, setDim2,
   };
 }
+
+/** Filter state for recipe analytics — periodStart + periodEnd only */
+export function useRecipeFilters() {
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  return { periodStart, setPeriodStart, periodEnd, setPeriodEnd };
+}

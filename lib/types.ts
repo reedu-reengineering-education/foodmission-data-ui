@@ -370,6 +370,130 @@ export interface SlCrossDimClassification {
   novaDistribution: Record<string, number> | null;
 }
 
+// ── Recipe Analytics ─────────────────────────────────────────
+
+export interface RecipeSummary {
+  period: { from: string | null; to: string | null };
+  totalRecipes: number;
+  newRecipes7d: number;
+  newRecipes30d: number;
+  activeRecipes: number;
+  archivedRecipes: number;
+  avgRating: number;
+  mostViewedRecipes: Array<{ title: string; viewCount: number }>;
+  mostCookedRecipes: Array<{ title: string; cookCount: number }>;
+  mostSavedRecipes: Array<{ title: string; savedCount: number }>;
+  highestRatedRecipes: Array<{ title: string; rating: number; ratingCount: number }>;
+  trendingRecipes: Array<{ title: string; trendScore: number }>;
+}
+
+export interface RecipeDietTrend {
+  date: string;
+  veganCount: number;
+  vegetarianCount: number;
+  pescatarianCount: number;
+  meatBasedCount: number;
+  glutenFreeCount: number;
+  lactoseFreeCount: number;
+  lowCarbCount: number;
+  highProteinCount: number;
+  ketoCount: number;
+  totalRecipes: number;
+}
+
+export interface RecipeDietDistribution {
+  label: string;
+  count: number;
+  pct: number;
+}
+
+export interface RecipeNutrition {
+  date: string;
+  recipeCount: number;
+  avgCalories: number | null;
+  avgProtein: number | null;
+  avgCarbs: number | null;
+  avgFat: number | null;
+  avgFiber: number | null;
+  avgSugar: number | null;
+  avgSalt: number | null;
+  avgNutriScore: number | null;
+  nutriScoreDistribution: Record<string, number> | null;
+  highestProteinRecipes: Array<{ title: string; protein: number }>;
+  lowestCalorieRecipes: Array<{ title: string; calories: number }>;
+}
+
+export interface RecipeSustainability {
+  date: string;
+  recipeCount: number;
+  avgEcoScore: number | null;
+  avgSustainabilityScore: number | null;
+  ecoScoreDistribution: Record<string, number> | null;
+  plantBasedPct: number | null;
+  animalBasedPct: number | null;
+  avgCo2Footprint: number | null;
+  avgWaterFootprint: number | null;
+  seasonalIngredientPct: number | null;
+  localIngredientPct: number | null;
+}
+
+export interface RecipeTopIngredient {
+  ingredientName: string;
+  category: string | null;
+  usageCount: number;
+  recipeCount: number;
+}
+
+export interface RecipeIngredientCategory {
+  category: string;
+  itemCount: number;
+  recipeCount: number;
+  pct: number;
+}
+
+export interface RecipeDiversityMetrics {
+  uniqueIngredients: number;
+  totalCuisines: number;
+  cuisineDiversityScore: number;
+  ingredientDiversityScore: number;
+  recipesWithVegetablesPct: number;
+  recipesWithLegumesPct: number;
+  recipesWithWholeGrainsPct: number;
+}
+
+export interface RecipeCuisineTrend {
+  cuisine: string;
+  recipeCount: number;
+  growthPct: number | null;
+  savedCount: number;
+  cookedCount: number;
+  viewCount: number;
+}
+
+export interface RecipeCookingPatterns {
+  date: string;
+  recipeCount: number;
+  avgCookTime: number | null;
+  avgPrepTime: number | null;
+  quickMealsPct: number | null;
+  mediumMealsPct: number | null;
+  longMealsPct: number | null;
+}
+
+export interface RecipeDifficultyDistribution {
+  difficulty: string;
+  count: number;
+  pct: number;
+}
+
+export interface RecipeUsageAnalytics {
+  date: string;
+  recipesCooked: number;
+  repeatCookedPct: number | null;
+  oneTimePct: number | null;
+  uniqueUsersCooked: number;
+}
+
 export interface SlSummary {
   period: { from: string | null; to: string | null };
   metadata?: AnalyticsSummaryMetadata;

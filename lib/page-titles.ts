@@ -20,4 +20,12 @@ export const PAGE_TITLES = {
     demographicInsights: "Demographic Insights",
     crossDimensionalAnalysis: "Cross-dimensional Analysis",
   },
+  recipes: {
+    overview: "Recipe Overview & Popularity",
+    dietLifestyle: "Diet & Lifestyle",
+    nutrition: "Nutrition Insights",
+    sustainability: "Sustainability",
+    ingredients: "Ingredient Analytics",
+    trendsPatterns: "Trends & Patterns",
+  },
 } as const;
