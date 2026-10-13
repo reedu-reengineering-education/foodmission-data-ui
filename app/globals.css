@@ -71,6 +71,14 @@
   --chart-3: oklch(0.7 0.15 160);
   --chart-4: oklch(0.6 0.1 200);
   --chart-5: oklch(0.45 0.09 185);
+  /* Categorical series (distinct hues, CVD-validated); for charts with
+     several series where the teal --chart-* shades are too close. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-other: #9a9a95;
   --sidebar: oklch(0.31 0.08 192);
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.98 0 0);
@@ -105,6 +113,12 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-other: #7d7c76;
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);

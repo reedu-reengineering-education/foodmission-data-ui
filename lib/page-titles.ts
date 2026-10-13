@@ -4,6 +4,7 @@ export const PAGE_TITLES = {
   behaviorChangeAnalysis: "Behavior Change Analysis",
   socialInfluenceAnalysis: "Social Influence Analysis",
   wasteTrackingAnalysis: "Waste Tracking Analysis",
+  appAnalytics: "App Analytics",
   mealLog: {
     nutritionAnalytics: "Nutrition Analytics",
     foodPopularity: "Food Popularity",
