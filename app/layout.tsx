@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AppLayout } from "@/components/app-layout";
 
@@ -21,6 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={`${openSans.variable} antialiased`}>
+        {/* Runtime public env (window.__ENV), see lib/public-env.ts */}
+        <Script src="/runtime-env.js" strategy="beforeInteractive" />
         <AppLayout>{children}</AppLayout>
       </body>
     </html>

@@ -28,6 +28,27 @@ See [`.env.example`](.env.example):
 | `BETTER_AUTH_SECRET` | Session signing secret |
 | `BETTER_AUTH_URL` | App base URL (e.g. `http://localhost:3000`) |
 
+All variables are read at runtime, not baked in at build time. `NEXT_PUBLIC_*`
+values reach the browser through `/runtime-env.js` (see
+[`lib/public-env.ts`](lib/public-env.ts)); add new public keys to
+`PUBLIC_ENV_KEYS` and read them with `publicEnv()`, not `process.env.NEXT_PUBLIC_*`.
+
+## Docker
+
+The [Docker workflow](.github/workflows/docker.yml) builds `linux/amd64` and
+`linux/arm64` natively on their own runners, then merges them into one
+multi-platform image, pushed to
+`ghcr.io/reedu-reengineering-education/foodmission-data-ui` on `main`
+(`latest`, `main`, `sha-*`), on `v*.*.*` tags and on PRs (`pr-<number>`). PRs
+from forks and Dependabot only build, since their token can't push.
+[Docker Cleanup](.github/workflows/docker-cleanup.yml) deletes `pr-<number>`
+when the PR closes and untagged images weekly (manual runs default to dry-run).
+
+```bash
+docker build -t foodmission-data-ui .
+docker run -p 3000:3000 --env-file .env foodmission-data-ui
+```
+
 ## Scripts
 
 | Command | Description |

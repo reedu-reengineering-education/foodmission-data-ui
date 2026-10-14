@@ -121,8 +121,6 @@ const data = {
       title: "App Analytics",
       url: "/app-analytics",
       icon: AppWindow,
-      disabled: true,
-      items: [],
     },
   ],
   personalData: [
@@ -156,6 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     email: string;
     avatar: string;
   }>();
+  const [isAdmin, setIsAdmin] = useState(false);
   const { capabilities: mealLogCapabilities } = useSourceCapabilities("meal-log");
   const { capabilities: shoppingListCapabilities } =
     useSourceCapabilities("shopping-list");
@@ -203,6 +202,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ];
 
   useEffect(() => {
+    fetch("/api/admin-status")
+      .then((res) => (res.ok ? res.json() : { admin: false }))
+      .then((status: { admin: boolean }) => setIsAdmin(status.admin))
+      .catch(() => setIsAdmin(false));
+  }, []);
+
+  useEffect(() => {
     async function fetchUser() {
       const session = await authClient.getSession();
       const user = session?.data?.user;
@@ -226,7 +232,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} label="Citizen Science Data" />
-        <NavMain items={data.appAnalytics} label="Analytics" />
+        {isAdmin && <NavMain items={data.appAnalytics} label="Admin" />}
         <NavMain items={data.personalData} label="Personal Data" />
         <NavProjects projects={data.research} />
       </SidebarContent>

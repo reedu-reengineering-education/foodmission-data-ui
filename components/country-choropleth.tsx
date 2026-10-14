@@ -8,6 +8,8 @@ export interface ChoroplethEntry {
   country: string;
   users: number;
   code: string;
+  /** Optional active-user count shown in the hover popup. */
+  active?: number;
 }
 
 export function CountryChoropleth({ data }: { data: ChoroplethEntry[] }) {
@@ -139,6 +141,12 @@ export function CountryChoropleth({ data }: { data: ChoroplethEntry[] }) {
         container.appendChild(strong);
         container.appendChild(br);
         container.appendChild(span);
+        if (entry.active !== undefined) {
+          const activeSpan = document.createElement("span");
+          activeSpan.textContent = `🟢 ${entry.active.toLocaleString()} active`;
+          container.appendChild(document.createElement("br"));
+          container.appendChild(activeSpan);
+        }
 
         popup
           .setLngLat(e.lngLat)
