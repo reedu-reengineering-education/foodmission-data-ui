@@ -1,0 +1,48 @@
+name: Docker Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Only log what would be deleted
+        type: boolean
+        default: true
+
+# The cleanup action isn't safe to run in parallel against the same package
+concurrency:
+  group: ghcr-cleanup
+
+jobs:
+  # Removes the pr-<n> image (and its platform children) once the PR is closed
+  pr-image:
+    name: Delete PR image
+    # Only PRs that pushed an image, see PUSH in docker.yml
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          delete-tags: pr-${{ github.event.pull_request.number }}
+
+  # Removes leftover untagged images, e.g. the per-platform images from the
+  # build jobs. Multi-arch children of tagged images are kept.
+  untagged:
+    name: Delete untagged images
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          delete-untagged: true
+          # Don't race a running build whose digests aren't merged yet
+          older-than: 1 day
+          validate: true
+          dry-run: ${{ inputs.dry-run || false }}
