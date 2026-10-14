@@ -1,5 +1,4 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+import { apiBaseUrl } from "@/lib/public-env";
 
 export function buildParams(
   filters: Record<string, string | undefined>,
@@ -31,7 +30,7 @@ export async function apiGet<T>(
   path: string,
   params?: URLSearchParams,
 ): Promise<T> {
-  const url = `${API_BASE}${path}${params?.toString() ? `?${params}` : ""}`;
+  const url = `${apiBaseUrl()}${path}${params?.toString() ? `?${params}` : ""}`;
   const res = await fetch(url);
   if (!res.ok) {
     let errorText = "";

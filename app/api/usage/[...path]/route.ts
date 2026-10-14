@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+import { apiBaseUrl } from "@/lib/public-env";
 
 const ALLOWED_PATHS = new Set([
   "overview",
@@ -43,7 +41,7 @@ export async function GET(
   }
 
   const upstream = await fetch(
-    `${API_BASE}/analytics/usage/${path}${req.nextUrl.search}`,
+    `${apiBaseUrl()}/analytics/usage/${path}${req.nextUrl.search}`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store",
