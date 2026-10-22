@@ -14,6 +14,7 @@ import {
   Trash2,
   Brain,
   Share2,
+  GraduationCap,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -121,6 +122,11 @@ const data = {
       title: "App Analytics",
       url: "/app-analytics",
       icon: AppWindow,
+    },
+    {
+      title: "Learning Analytics",
+      url: "/learning-analytics",
+      icon: GraduationCap,
     },
   ],
   personalData: [

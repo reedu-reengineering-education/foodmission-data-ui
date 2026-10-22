@@ -1,5 +1,11 @@
-// Admin-only live app usage, fetched through the /api/usage proxy route
-// which attaches the signed-in user's Keycloak token.
+// Admin-only live app usage: the /analytics/admin/usage/* insights mapped
+// onto the shapes the App Analytics page renders.
+
+import {
+  fetchInsight,
+  UNKNOWN_BUCKET,
+  type InsightParams,
+} from "@/lib/insights-api";
 
 export const USAGE_DIMENSIONS = [
   "country",
@@ -17,25 +23,29 @@ export const USAGE_DIMENSION_LABELS: Record<UsageDimension, string> = {
   language: "Language",
 };
 
-/** Bucket value the API uses for users that never filled in the dimension. */
-export const UNKNOWN_BUCKET = "unknown";
+export { UNKNOWN_BUCKET };
+
+export interface UsageTotals {
+  totalUsers: number;
+  activeUsers: { last1d: number; last7d: number; last30d: number };
+  newUsers: { last7d: number; last30d: number };
+  /** 0–1; null when there are no monthly actives. */
+  stickiness: { dauOverMau: number | null; wauOverMau: number | null };
+}
 
 export interface UsageBreakdownRow {
   value: string;
   totalUsers: number;
-  activeUsers: number;
+  active7d: number;
+  active30d: number;
 }
 
-export interface UsageOverview {
-  generatedAt: string;
-  totalUsers: number;
-  activeUsers: { last1d: number; last7d: number; last30d: number };
-  newUsers: { last7d: number; last30d: number };
-  neverSeenUsers: number;
-  /** 0–1; null when there are no monthly actives. */
-  stickiness: { dauOverMau: number | null; wauOverMau: number | null };
-  activeWindowDays: number;
-  breakdowns: Record<UsageDimension, UsageBreakdownRow[]>;
+export interface UsageBreakdown {
+  dimension: UsageDimension;
+  rows: UsageBreakdownRow[];
+  /** Groups below `minGroupSize` users, plus their complements, are left out. */
+  suppressedGroups: number;
+  minGroupSize: number;
 }
 
 export interface UsageTrendRow {
@@ -45,47 +55,73 @@ export interface UsageTrendRow {
   totalUsers: number;
 }
 
-export interface UsageBreakdown {
-  dimension: UsageDimension;
-  activeWindowDays: number;
-  rows: UsageBreakdownRow[];
-}
-
 export interface UsageTrendBreakdown {
   dimension: UsageDimension;
-  /** Weeks or buckets without activity are omitted. */
   rows: { weekStart: string; value: string; activeUsers: number }[];
 }
 
-export class UsageApiError extends Error {
-  constructor(public readonly status: number) {
-    super(`Usage API ${status}`);
-  }
+function get(path: string, params: InsightParams = {}) {
+  return fetchInsight(`usage/${path}`, params);
 }
 
-async function get<T>(path: string, params: Record<string, string>) {
-  const res = await fetch(`/api/usage/${path}?${new URLSearchParams(params)}`);
-  if (!res.ok) throw new UsageApiError(res.status);
-  return res.json() as Promise<T>;
-}
+const num = (value: number | null | undefined) => value ?? 0;
 
 export const usageApi = {
-  overview(activeDays = 7) {
-    return get<UsageOverview>("overview", { activeDays: String(activeDays) });
+  async totals(): Promise<UsageTotals> {
+    const { rows } = await get("users");
+    const v = rows[0]?.values ?? {};
+    return {
+      totalUsers: num(v.users),
+      activeUsers: {
+        last1d: num(v.active1d),
+        last7d: num(v.active7d),
+        last30d: num(v.active30d),
+      },
+      newUsers: { last7d: num(v.new7d), last30d: num(v.new30d) },
+      stickiness: {
+        dauOverMau: v.dauOverMau ?? null,
+        wauOverMau: v.wauOverMau ?? null,
+      },
+    };
   },
-  breakdown(dim: UsageDimension, activeDays = 7) {
-    return get<UsageBreakdown>("breakdown", {
-      dim,
-      activeDays: String(activeDays),
+  async breakdown(dimension: UsageDimension): Promise<UsageBreakdown> {
+    const { meta, rows } = await get("users", { breakdown: dimension });
+    return {
+      dimension,
+      rows: rows.map((r) => ({
+        value: r.group[dimension] ?? UNKNOWN_BUCKET,
+        totalUsers: num(r.values.users),
+        active7d: num(r.values.active7d),
+        active30d: num(r.values.active30d),
+      })),
+      suppressedGroups: meta.suppressedGroups,
+      minGroupSize: meta.minGroupSize,
+    };
+  },
+  async trend(weeks = 12): Promise<UsageTrendRow[]> {
+    const { rows } = await get("weekly-activity", { weeks });
+    return rows.map((r) => ({
+      weekStart: r.group.week ?? "",
+      activeUsers: num(r.values.activeUsers),
+      newUsers: num(r.values.newUsers),
+      totalUsers: num(r.values.totalUsers),
+    }));
+  },
+  async trendBreakdown(
+    dimension: UsageDimension,
+    weeks = 12,
+  ): Promise<UsageTrendBreakdown> {
+    const { rows } = await get("weekly-activity", {
+      breakdown: dimension,
+      weeks,
     });
-  },
-  trend(weeks = 12) {
-    return get<UsageTrendRow[]>("trend", { weeks: String(weeks) });
-  },
-  trendBreakdown(dim: UsageDimension, weeks = 12) {
-    return get<UsageTrendBreakdown>("trend/breakdown", {
-      dim,
-      weeks: String(weeks),
-    });
+    return {
+      dimension,
+      rows: rows.map((r) => ({
+        weekStart: r.group.week ?? "",
+        value: r.group[dimension] ?? UNKNOWN_BUCKET,
+        activeUsers: num(r.values.activeUsers),
+      })),
+    };
   },
 };

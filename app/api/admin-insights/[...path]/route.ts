@@ -2,24 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { apiBaseUrl } from "@/lib/public-env";
 
-const ALLOWED_PATHS = new Set([
-  "overview",
-  "breakdown",
-  "trend",
-  "trend/breakdown",
-]);
+// Admin insights and their catalog only, so the proxy cannot be used to
+// reach other backend routes with the user's token.
+const ALLOWED_PATH = /^(catalog|(usage|learning)\/[a-z][a-z-]*)$/;
 
 /**
- * Proxies the admin-only `/analytics/usage/*` endpoints with the signed-in
- * user's Keycloak access token, so the token never reaches the browser.
- * The backend enforces the admin role.
+ * Proxies the admin-only `/analytics/admin/*` insights and catalog with the
+ * signed-in user's Keycloak access token, so the token never reaches the
+ * browser. The backend enforces the admin role.
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const path = (await params).path.join("/");
-  if (!ALLOWED_PATHS.has(path)) {
+  if (!ALLOWED_PATH.test(path)) {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
@@ -41,7 +38,7 @@ export async function GET(
   }
 
   const upstream = await fetch(
-    `${apiBaseUrl()}/analytics/usage/${path}${req.nextUrl.search}`,
+    `${apiBaseUrl()}/analytics/admin/${path}${req.nextUrl.search}`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store",
