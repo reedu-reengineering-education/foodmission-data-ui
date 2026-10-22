@@ -34,17 +34,21 @@ import { CountryChoropleth } from "@/components/country-choropleth";
 import { COUNTRY_INFO } from "@/lib/constants";
 import {
   usageApi,
-  UsageApiError,
   UNKNOWN_BUCKET,
   USAGE_DIMENSIONS,
   USAGE_DIMENSION_LABELS,
   type UsageBreakdown,
   type UsageBreakdownRow,
   type UsageDimension,
-  type UsageOverview,
+  type UsageTotals,
   type UsageTrendBreakdown,
   type UsageTrendRow,
 } from "@/lib/usage-api";
+import { InsightApiError } from "@/lib/insights-api";
+import {
+  FeatureUsageCard,
+  SessionsCard,
+} from "@/components/usage-activity-cards";
 
 const ACTIVE_WINDOW_DAYS = 7;
 const TREND_WEEKS = 12;
@@ -128,7 +132,7 @@ function breakdownChartData(
       : rows;
   return sorted.slice(0, MAX_BREAKDOWN_BARS).map((r) => ({
     label: formatBucket(dimension, r.value),
-    active: r.activeUsers,
+    active: r.active7d,
     total: r.totalUsers,
   }));
 }
@@ -141,20 +145,14 @@ interface CountryRow {
   active30d: number;
 }
 
-function countryRows(
-  rows7d: UsageBreakdownRow[],
-  rows30d: UsageBreakdownRow[],
-): CountryRow[] {
-  const active30d = new globalThis.Map(
-    rows30d.map((r) => [r.value, r.activeUsers] as const),
-  );
-  return rows7d
+function countryRows(rows: UsageBreakdownRow[]): CountryRow[] {
+  return rows
     .map((r) => ({
       code: r.value,
       name: COUNTRY_INFO[r.value]?.name ?? formatBucket("country", r.value),
       totalUsers: r.totalUsers,
-      active7d: r.activeUsers,
-      active30d: active30d.get(r.value) ?? 0,
+      active7d: r.active7d,
+      active30d: r.active30d,
     }))
     .sort(
       (a, b) =>
@@ -369,22 +367,26 @@ function WeeklyActiveCard({ trend }: { trend: UsageTrendRow[] }) {
   );
 }
 
-function BreakdownCard({
-  dimension,
-  rows,
-  activeWindowDays,
-}: {
-  dimension: UsageDimension;
-  rows: UsageBreakdownRow[];
-  activeWindowDays: number;
-}) {
+function suppressedNote({ suppressedGroups, minGroupSize }: UsageBreakdown) {
+  return suppressedGroups > 0
+    ? `${suppressedGroups} small group${suppressedGroups === 1 ? "" : "s"} hidden (fewer than ${minGroupSize} users, or revealing one)`
+    : null;
+}
+
+function BreakdownCard({ breakdown }: { breakdown: UsageBreakdown }) {
+  const { dimension, rows } = breakdown;
   const data = breakdownChartData(dimension, rows);
+  const footer = [
+    rows.length > MAX_BREAKDOWN_BARS &&
+      `Top ${MAX_BREAKDOWN_BARS} of ${rows.length}`,
+    suppressedNote(breakdown),
+  ].filter(Boolean);
   return (
     <Card>
       <CardHeader>
         <CardTitle>{USAGE_DIMENSION_LABELS[dimension]}</CardTitle>
         <CardDescription>
-          Active ({activeWindowDays}d) vs. registered users
+          Active ({ACTIVE_WINDOW_DAYS}d) vs. registered users
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -414,9 +416,9 @@ function BreakdownCard({
           </BarChart>
         </ChartContainer>
       </CardContent>
-      {rows.length > MAX_BREAKDOWN_BARS && (
+      {footer.length > 0 && (
         <CardFooter className="text-xs text-muted-foreground">
-          Top {MAX_BREAKDOWN_BARS} of {rows.length}
+          {footer.join(" · ")}
         </CardFooter>
       )}
     </Card>
@@ -430,9 +432,9 @@ type State =
   | { status: "unauthorized" | "forbidden" | "error" }
   | {
       status: "ok";
-      overview: UsageOverview;
+      totals: UsageTotals;
       trend: UsageTrendRow[];
-      countries30d: UsageBreakdown;
+      breakdowns: Record<UsageDimension, UsageBreakdown>;
     };
 
 /**
@@ -446,18 +448,20 @@ export function AppUsageContent() {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      usageApi.overview(ACTIVE_WINDOW_DAYS),
+      usageApi.totals(),
       usageApi.trend(TREND_WEEKS),
-      usageApi.breakdown("country", MONTHLY_WINDOW_DAYS),
+      Promise.all(USAGE_DIMENSIONS.map((dim) => usageApi.breakdown(dim))),
     ])
-      .then(([overview, trend, countries30d]) => {
-        if (!cancelled) {
-          setState({ status: "ok", overview, trend, countries30d });
-        }
+      .then(([totals, trend, list]) => {
+        if (cancelled) return;
+        const breakdowns = Object.fromEntries(
+          list.map((b) => [b.dimension, b]),
+        ) as Record<UsageDimension, UsageBreakdown>;
+        setState({ status: "ok", totals, trend, breakdowns });
       })
       .catch((e) => {
         if (cancelled) return;
-        const status = e instanceof UsageApiError ? e.status : 0;
+        const status = e instanceof InsightApiError ? e.status : 0;
         setState({
           status:
             status === 401
@@ -523,8 +527,9 @@ export function AppUsageContent() {
     );
   }
 
-  const { overview, trend, countries30d } = state;
-  const countries = countryRows(overview.breakdowns.country, countries30d.rows);
+  const { totals, trend, breakdowns } = state;
+  const countries = countryRows(breakdowns.country.rows);
+  const countriesNote = suppressedNote(breakdowns.country);
   const countryMap = countries
     .filter((c) => c.code !== UNKNOWN_BUCKET)
     .map((c) => ({
@@ -541,31 +546,36 @@ export function AppUsageContent() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Registered Users"
-          value={overview.totalUsers.toLocaleString()}
-          hint={`${overview.neverSeenUsers.toLocaleString()} never seen`}
+          value={totals.totalUsers.toLocaleString()}
+          hint={`${(totals.totalUsers - totals.activeUsers.last30d).toLocaleString()} not active in ${MONTHLY_WINDOW_DAYS} days`}
           icon={Users}
         />
         <KpiCard
           title="Daily Active"
-          value={overview.activeUsers.last1d.toLocaleString()}
-          hint={`DAU/MAU ${formatPct(overview.stickiness.dauOverMau)}`}
+          value={totals.activeUsers.last1d.toLocaleString()}
+          hint={`DAU/MAU ${formatPct(totals.stickiness.dauOverMau)}`}
           icon={Activity}
         />
         <KpiCard
           title="Weekly / Monthly Active"
-          value={`${overview.activeUsers.last7d.toLocaleString()} / ${overview.activeUsers.last30d.toLocaleString()}`}
-          hint={`WAU/MAU ${formatPct(overview.stickiness.wauOverMau)}`}
+          value={`${totals.activeUsers.last7d.toLocaleString()} / ${totals.activeUsers.last30d.toLocaleString()}`}
+          hint={`WAU/MAU ${formatPct(totals.stickiness.wauOverMau)}`}
           icon={CalendarDays}
         />
         <KpiCard
           title="New Users"
-          value={overview.newUsers.last7d.toLocaleString()}
-          hint={`Last 7 days · ${overview.newUsers.last30d.toLocaleString()} in 30 days`}
+          value={totals.newUsers.last7d.toLocaleString()}
+          hint={`Last 7 days · ${totals.newUsers.last30d.toLocaleString()} in 30 days`}
           icon={UserPlus}
         />
       </div>
 
       <WeeklyActiveCard trend={trend} />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <SessionsCard />
+        <FeatureUsageCard />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-7">
         <Card className="lg:col-span-4 p-0 overflow-hidden min-h-[400px]">
@@ -579,7 +589,7 @@ export function AppUsageContent() {
             <CardTitle>Users by Country</CardTitle>
             <CardDescription>
               Registered users and users active in the last{" "}
-              {overview.activeWindowDays} / {countries30d.activeWindowDays} days
+              {ACTIVE_WINDOW_DAYS} / {MONTHLY_WINDOW_DAYS} days
             </CardDescription>
           </CardHeader>
           <CardContent className="max-h-[320px] overflow-y-auto">
@@ -589,10 +599,10 @@ export function AppUsageContent() {
                   <th className="py-2 text-left font-medium">Country</th>
                   <th className="py-2 text-right font-medium">Registered</th>
                   <th className="py-2 text-right font-medium">
-                    Active {overview.activeWindowDays}d
+                    Active {ACTIVE_WINDOW_DAYS}d
                   </th>
                   <th className="py-2 text-right font-medium">
-                    Active {countries30d.activeWindowDays}d
+                    Active {MONTHLY_WINDOW_DAYS}d
                   </th>
                 </tr>
               </thead>
@@ -614,17 +624,17 @@ export function AppUsageContent() {
               </tbody>
             </table>
           </CardContent>
+          {countriesNote && (
+            <CardFooter className="text-xs text-muted-foreground">
+              {countriesNote}
+            </CardFooter>
+          )}
         </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         {USAGE_DIMENSIONS.filter((dim) => dim !== "country").map((dim) => (
-          <BreakdownCard
-            key={dim}
-            dimension={dim}
-            rows={overview.breakdowns[dim]}
-            activeWindowDays={overview.activeWindowDays}
-          />
+          <BreakdownCard key={dim} breakdown={breakdowns[dim]} />
         ))}
       </div>
     </div>
